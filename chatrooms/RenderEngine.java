@@ -34,8 +34,40 @@ public class RenderEngine {
         }
     }
 
+    public static int getCurrentTopic() {
+        return currentTopic;
+    }
+
+    public static ArrayList getMessages() {
+        return messages;
+    }
+
     public static String[] getScene() {
         return scene;
+    }
+
+    public static ArrayList getTopics() {
+        return topics;
+    }
+
+    public static void setCurrentTopic(int currentTopic) {
+        RenderEngine.currentTopic = currentTopic;
+    }
+
+    public static void setMessages(ArrayList messages) {
+        RenderEngine.messages = messages;
+    }
+
+    public static void setScene(String[] scene) {
+        RenderEngine.scene = scene;
+    }
+
+    public static void setTopics(ArrayList topics) {
+        RenderEngine.topics = topics;
+    }
+
+    private static String leftPad(String str, int padding) {
+        return String.format("%1$" + padding + "s", str);
     }
 
     public static void render() {
@@ -44,6 +76,10 @@ public class RenderEngine {
             str.append(line + "\n");
         }
         System.out.print(str.toString());
+    }
+
+    private static String rightPad(String str, int padding) {
+        return String.format("%1$-" + padding + "s", str);
     }
 
 }
