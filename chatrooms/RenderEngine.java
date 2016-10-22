@@ -30,7 +30,7 @@ public class RenderEngine {
         topics = new ArrayList<String>();
 
         for (int i = 0; i < scene.length; i++) {
-            scene[i] = " ";
+            scene[i] = "";
         }
     }
 
@@ -71,11 +71,21 @@ public class RenderEngine {
     }
 
     public static void render() {
+        renderTopics();
+
         StringBuilder str = new StringBuilder();
         for (String line : scene) {
             str.append(line + "\n");
         }
         System.out.print(str.toString());
+    }
+
+    private static void renderTopics() {
+        scene[1] = " ┌ #" + rightPad(topics.get(0).toString(), 15) + " [ ] ┐";
+        for (int i = 1; i < topics.size() - 1; i++) {
+            scene[i + 1] = " │ #" + rightPad(topics.get(i).toString(), 15) + " [ ] │";
+        }
+        scene[topics.size()] = " └ #" + rightPad(topics.get(topics.size() - 1).toString(), 15) + " [ ] ┘";
     }
 
     private static String rightPad(String str, int padding) {
