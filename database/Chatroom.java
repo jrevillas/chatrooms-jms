@@ -1,3 +1,5 @@
+package services;
+
 import java.sql.Timestamp;
 
 public class Chatroom {
