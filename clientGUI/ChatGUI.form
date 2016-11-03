@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="clientGUI.ChatGUI">
+  <grid id="27dc6" binding="panelGeneral" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="980" height="720"/>
+    </constraints>
+    <properties>
+      <minimumSize width="980" height="720"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="dd2be" binding="panelMenu" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="0">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="3feb8" class="javax.swing.JButton" binding="buttonNewRoom">
+            <constraints/>
+            <properties>
+              <borderPainted value="false"/>
+              <contentAreaFilled value="false"/>
+              <focusPainted value="false"/>
+              <font name="Roboto Light"/>
+              <horizontalTextPosition value="11"/>
+              <margin top="2" left="4" bottom="2" right="4"/>
+              <text value="&amp;Join Room"/>
+            </properties>
+          </component>
+          <component id="e264a" class="javax.swing.JButton" binding="buttonSettings">
+            <constraints/>
+            <properties>
+              <autoscrolls value="false"/>
+              <borderPainted value="false"/>
+              <contentAreaFilled value="false"/>
+              <focusPainted value="false"/>
+              <font name="Roboto Light"/>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="0"/>
+              <margin top="2" left="4" bottom="2" right="4"/>
+              <text value="&amp;Settings"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <vspacer id="a2426">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <splitpane id="7041e" binding="splitMessages">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="200"/>
+          </grid>
+        </constraints>
+        <properties>
+          <dividerLocation value="254"/>
+          <dividerSize value="0"/>
+          <enabled value="false"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <grid id="182e0" binding="panelChat" layout-manager="BorderLayout" hgap="5" vgap="0">
+            <constraints>
+              <splitpane position="right"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="e339f" binding="panelInfoRoom" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="39899" class="javax.swing.JButton" binding="buttonLeaveRoom">
+                    <constraints border-constraint="East"/>
+                    <properties>
+                      <alignmentY value="0.0"/>
+                      <borderPainted value="false"/>
+                      <contentAreaFilled value="false"/>
+                      <focusPainted value="false"/>
+                      <font name="Roboto Light" size="14"/>
+                      <margin top="2" left="14" bottom="0" right="4"/>
+                      <text value="&amp;Leave Room"/>
+                    </properties>
+                  </component>
+                  <component id="6d37f" class="javax.swing.JButton" binding="buttonRoomName">
+                    <constraints border-constraint="West"/>
+                    <properties>
+                      <borderPainted value="false"/>
+                      <contentAreaFilled value="false"/>
+                      <enabled value="true"/>
+                      <focusPainted value="false"/>
+                      <focusable value="false"/>
+                      <margin top="2" left="4" bottom="2" right="14"/>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="edf89" binding="panelSend" layout-manager="GridBagLayout">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="2b1b6" class="javax.swing.JButton" binding="buttonSend">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="0.0" weighty="1.0"/>
+                    </constraints>
+                    <properties>
+                      <borderPainted value="false"/>
+                      <contentAreaFilled value="false"/>
+                      <focusPainted value="false"/>
+                      <focusable value="true"/>
+                      <font name="Roboto Light"/>
+                      <text value="Send"/>
+                    </properties>
+                  </component>
+                  <component id="a249c" class="javax.swing.JTextField" binding="textSend">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                      <gridbag weightx="1.0" weighty="1.0"/>
+                    </constraints>
+                    <properties>
+                      <font name="Roboto Light"/>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <splitpane id="a9fe" binding="splitMessage">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <dividerLocation value="560"/>
+                  <dividerSize value="1"/>
+                  <doubleBuffered value="false"/>
+                  <enabled value="false"/>
+                  <focusable value="false"/>
+                  <lastDividerLocation value="-1"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <scrollpane id="eecc4" binding="scrollMensajes">
+                    <constraints>
+                      <splitpane position="left"/>
+                    </constraints>
+                    <properties>
+                      <alignmentX value="0.5"/>
+                      <alignmentY value="0.5"/>
+                      <autoscrolls value="true"/>
+                      <background color="-1"/>
+                      <font name="Roboto Light"/>
+                      <foreground color="-14771781"/>
+                      <opaque value="true"/>
+                      <verticalScrollBarPolicy value="20"/>
+                    </properties>
+                    <border type="none"/>
+                    <children>
+                      <component id="5955b" class="javax.swing.JTable" binding="tableMessages">
+                        <constraints/>
+                        <properties>
+                          <background color="-1"/>
+                          <focusable value="false"/>
+                          <font name="Roboto Light"/>
+                          <foreground color="-13882324"/>
+                          <gridColor color="-1"/>
+                          <inheritsPopupMenu value="false"/>
+                          <rowSelectionAllowed value="false"/>
+                          <selectionBackground color="-1"/>
+                          <selectionForeground color="-13882324"/>
+                          <showHorizontalLines value="false"/>
+                          <showVerticalLines value="false"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </scrollpane>
+                  <scrollpane id="82349" binding="scrollUsers">
+                    <constraints>
+                      <splitpane position="right"/>
+                    </constraints>
+                    <properties>
+                      <background color="-1"/>
+                    </properties>
+                    <border type="none"/>
+                    <children>
+                      <component id="959e1" class="javax.swing.JTable" binding="tableUsers">
+                        <constraints/>
+                        <properties>
+                          <background color="-1"/>
+                          <showHorizontalLines value="false"/>
+                          <showVerticalLines value="false"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </scrollpane>
+                </children>
+              </splitpane>
+            </children>
+          </grid>
+          <scrollpane id="7d046" binding="scrollRooms">
+            <constraints>
+              <splitpane position="left"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="eec2" class="javax.swing.JTable" binding="tableRooms">
+                <constraints/>
+                <properties>
+                  <background color="-1"/>
+                  <enabled value="false"/>
+                  <selectionBackground color="-5448961"/>
+                  <showHorizontalLines value="true"/>
+                  <showVerticalLines value="false"/>
+                </properties>
+              </component>
+            </children>
+          </scrollpane>
+        </children>
+      </splitpane>
+    </children>
+  </grid>
+</form>
