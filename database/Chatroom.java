@@ -1,22 +1,14 @@
-package services;
+package database;
 
 import java.sql.Timestamp;
 
 public class Chatroom {
 
-	private int id;
 	private String name;
-	private int id_creator;
+	private String handle_creator;
 	private Timestamp create_date;
 
-	public Chatroom(){}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
+	public Chatroom(){
 	}
 
 	public String getName() {
@@ -27,12 +19,12 @@ public class Chatroom {
 		this.name = name;
 	}
 
-	public int getId_creator() {
-		return id_creator;
+	public String getHandle_creator() {
+		return handle_creator;
 	}
 
-	public void setId_creator(int id_creator) {
-		this.id_creator = id_creator;
+	public void setHandle_creator(String handle_creator) {
+		this.handle_creator = handle_creator;
 	}
 
 	public Timestamp getCreate_date() {
@@ -42,14 +34,5 @@ public class Chatroom {
 	public void setCreate_date(Timestamp create_date) {
 		this.create_date = create_date;
 	}
-
-	public static void toString(Chatroom[] chatrooms){
-
-		System.out.format("%2s%15s%11s%30s\n", "id", "name", "id_creator", "create_date");
-
-		for(int i = 0; i < chatrooms.length; i++)
-			System.out.format("%2d%15s%11s%30tc\n", chatrooms[i].getId(), chatrooms[i].getName(),
-					chatrooms[i].getId_creator(), chatrooms[i].getCreate_date());
-	}
-
+	
 }
