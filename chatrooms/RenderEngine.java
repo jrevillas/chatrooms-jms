@@ -79,6 +79,13 @@ public class RenderEngine {
         messages.add(msg);
     }
 
+    public static void addTopic(String topic) {
+        if (topics.size() > SCENE_HEIGHT - 4) {
+            topics.remove(0);
+        }
+        topics.add(topic);
+    }
+
     public static void render() {
         renderTopics();
         renderMessages();
@@ -87,6 +94,9 @@ public class RenderEngine {
         for (String line : scene) {
             str.append(line + "\n");
         }
+
+        str.append(" > ");
+
         System.out.print(str.toString());
     }
 

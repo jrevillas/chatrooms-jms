@@ -1,5 +1,10 @@
 package chatrooms;
 
+import javax.jms.MapMessage;
+import javax.jms.TextMessage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Scanner;
 
 /**
@@ -17,8 +22,19 @@ public class RenderEngineTest {
     private static final String WHITE = "\u001B[37m";
     private static final String YELLOW = "\u001B[33m";
 
+    private static final String PIZZA = "\uD83C\uDF46";
+    private static final String CAKE = "\uD83C\uDF70";
+    private static final String MEAT = "\uD83C\uDF57";
+    private static final String POO = "\uD83D\uDCA9";
+
+    private static final String msgPrefix = "[@" + RED + "jrevillas" + RESET + "] ";
+
+    public static BufferedReader br;
+
     public static void main(String[] args) {
-        RenderEngine.addMessage("[@" + BLUE + "dmelero" + RESET + "] This is a test message.");
+        Consumidor instancia = new Consumidor();
+
+        RenderEngine.addMessage("[@" + PURPLE + "dmelero" + RESET + "] This is a test message.");
         RenderEngine.addMessage("[@" + CYAN + "jruiz" + RESET + "] This is another test message.");
         RenderEngine.addMessage("[@" + GREEN + "mnunez" + RESET + "] This is just another test message.");
 
@@ -31,16 +47,37 @@ public class RenderEngineTest {
         RenderEngine.render();
 
         while (true) {
-            Scanner scanner = new Scanner(System.in);
-            System.out.print(" > ");
-            String input = scanner.nextLine();
-            if (input.startsWith("newtopic")) {
-                RenderEngine.getTopics().add(input.substring(input.lastIndexOf(" ") + 1));
-            } else {
-                RenderEngine.addMessage("[@" + PURPLE + "jrevillas" + RESET + "] " + input);
-            }
-            RenderEngine.render();
+            scan();
         }
+    }
+
+    public static void scan() {
+        try {
+            while (true) {
+                br = new BufferedReader(new InputStreamReader(System.in));
+                // System.out.print(" > ");
+                String input = br.readLine();
+                // br.close();
+                // RenderEngine.addMessage(msgPrefix + input);
+
+                RenderEngine.render();
+
+                MapMessage message = Consumidor.session.createMapMessage();
+                message.setInt("MSG_TYPE", 5);
+                message.setString("MSG_CONTENT", msgPrefix + input);
+                message.setString("USER", "Revillas");
+                message.setString("CHATROOM", "ClashRoyale");
+                Consumidor.msgProducer.send(message);
+
+//                RenderEngine.render();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void closeScanner() {
+        // TODO scanner.close() no deberia utilizarse, cerraria stdin
     }
 
 }
