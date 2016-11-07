@@ -2,7 +2,7 @@ package database;
 
 import java.sql.Timestamp;
 
-public class Message {
+public class StdMessage {
 
 	private String text;
 	private String handle_user;
@@ -10,7 +10,7 @@ public class Message {
 	private String ids_mentioned;
 	private Timestamp send_date;
 
-	public Message(){
+	public StdMessage(){
 	}
 
 	public String getText() {

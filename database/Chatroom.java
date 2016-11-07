@@ -4,12 +4,15 @@ import java.sql.Timestamp;
 
 public class Chatroom {
 
+	private int id;
 	private String name;
 	private String handle_creator;
 	private Timestamp create_date;
 
 	public Chatroom(){
 	}
+
+	public int getId() { return id; }
 
 	public String getName() {
 		return name;
@@ -34,5 +37,6 @@ public class Chatroom {
 	public void setCreate_date(Timestamp create_date) {
 		this.create_date = create_date;
 	}
-	
+
+	public void setId (int id) { this.id = id; }
 }

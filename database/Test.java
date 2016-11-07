@@ -1,4 +1,4 @@
-package services;
+package database;
 
 import java.sql.*;
 import org.mindrot.BCrypt;
@@ -47,36 +47,36 @@ public class Test {
         // Insert de una chatroom
         Chatroom chatroom = new Chatroom();
         User creator = new User();
-        chatroom.setName("Clash Royale");
-        Database.insertChatroom(chatroom, creator);
+        chatroom.setName("ClashRoyale");
+        Database.insertChatroom(jruiz, chatroom);
         System.out.println("CHATROOM CREATED");
 
         // Insert de inTopic
-        Database.insertInTopic(jruiz, chatroom);
-        Database.insertInTopic(dmelero, chatroom);
-        Database.insertInTopic(mnunezm, chatroom);
-        Database.insertInTopic(jrevillas, chatroom);
+        Database.insertSubscription(jruiz, chatroom);
+        Database.insertSubscription(dmelero, chatroom);
+        Database.insertSubscription(mnunezm, chatroom);
+        Database.insertSubscription(jrevillas, chatroom);
         System.out.println("INSERTED INTOPIC");
 
         // Insert messages
-        Message message_jruiz = new Message();
-        message_jruiz.setId_chatroom(chatroom.getId());
-        message_jruiz.setId_user(jruiz.getId());
+        StdMessage message_jruiz = new StdMessage();
+        message_jruiz.setName_chatroom(chatroom.getName());
+        message_jruiz.setHandle_user(jruiz.getHandle());
         message_jruiz.setText("I'm the best");
 
-        Message message_mnunezm = new Message();
-        message_mnunezm.setId_chatroom(chatroom.getId());
-        message_mnunezm.setId_user(message_mnunezm.getId());
+        StdMessage message_mnunezm = new StdMessage();
+        message_mnunezm.setName_chatroom(chatroom.getName());
+        message_mnunezm.setHandle_user(mnunezm.getHandle());
         message_mnunezm.setText("Holita soy Migui");
 
-        Message message_jrevillas = new Message();
-        message_jrevillas.setId_chatroom(chatroom.getId());
-        message_jrevillas.setId_user(message_jrevillas.getId());
+        StdMessage message_jrevillas = new StdMessage();
+        message_jrevillas.setName_chatroom(chatroom.getName());
+        message_jrevillas.setHandle_user(jrevillas.getHandle());
         message_jrevillas.setText("I'm the revillas");
 
-        Message message_dmelero = new Message();
-        message_dmelero.setId_chatroom(chatroom.getId());
-        message_dmelero.setId_user(message_dmelero.getId());
+        StdMessage message_dmelero = new StdMessage();
+        message_dmelero.setName_chatroom(chatroom.getName());
+        message_dmelero.setHandle_user(dmelero.getHandle());
         message_dmelero.setText("Tiki tiki");
 
         Database.insertMessage(message_jruiz, jruiz, chatroom);
@@ -95,9 +95,9 @@ public class Test {
         }
         Chatroom[] chatrooms = Database.getChatrooms();
         for (int i = 0; i < chatrooms.length; i++)
-            System.out.println("Chatrooms nº [" + i + "] = " + chatrooms[i].getName());
+            System.out.println("Chatrooms nº [" + i + "]  tiene como id = " + chatrooms[i].getId());
 
-        Message[] messages = Database.getMessages();
+        StdMessage[] messages = Database.getMessages();
         for (int i = 0; i < messages.length; i++)
             System.out.println("Messages nº [" + i + "] = " + messages[i].getText());
     }
