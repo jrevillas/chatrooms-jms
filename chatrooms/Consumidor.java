@@ -16,34 +16,55 @@ public class Consumidor implements javax.jms.MessageListener {
     public static MessageProducer msgProducer;
     public static Session session;
 
-    public static MessageConsumer magiConsumer;
-    public static MessageProducer magiProducer;
+    public static MessageConsumer sibylControlConsumer;
+    public static MessageProducer sibylControlProducer;
 
     public Consumidor() {
         try {
-            // Inicialización de Conexión y Sesión
-
             ConnectionFactory myConnFactory = new com.sun.messaging.ConnectionFactory();
             Connection connection = myConnFactory.createConnection();
-
-            // connection.setClientID("DurableSub");
-
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-            // Obtrención de Destination en variable chatTopic
+            // Primera queue a la que se suscribe el usuario: conocida (sibyl-control)
+            // El primer mensaje que se obtenga debe contener el nombre de la queue a la que
+            // el usuario debe suscribirse para interacturar con sibyl y recibir notificaciones.
 
-            // Este es el nombre que tendrá en el broker, por lo que tendrá que ser distinto en cada usuario
-            Queue magiQueue = session.createQueue("sibyl");
-            magiProducer = session.createProducer(magiQueue);
-            magiConsumer = session.createConsumer(magiQueue);
+            // TODO repasar replyTo al tratar los mensajes desde sibyl para responder a ellos
+            // reqQ = session.createQueue("queue:///REQUESTQ");
+            // repQ = session.createQueue("queue:///REPLYQ");
+            // producer = session.createProducer(reqQ);
+            // Message requestMessage = session.createTextMessage("Requesting a service");
+            // requestMessage.setJMSReplyTo(repQ);
+            // producer.send(requestMessage);
+            // String selector = "JMSCorrelationID='" + requestMessage.getJMSMessageID()+"'";
+            // CONSUMER MÁGICO -> Solo recibe el mensaje que es respuesta al tuyo
+            // consumer = session.createConsumer(repQ, selector);
+            // connection.start();
+            // TODO https://www.ibm.com/developerworks/community/blogs/messaging/entry/jms_request_reply_sample?lang=es
 
+            // sibyl ---> BOOT SEQUENCE incluye SUBSCRIBE(sibyl-control)
+            // usuario ---> SUBSCRIBE(sibyl-control)
+            // usuario ---> {"USER_HANDLER":"jrevillas","USER_PASSWORD":"12345"} ---> sibyl-control (QUEUE)
+            // sibyl ---> {"HANDSHAKE":true,"PUSH_QUEUE":"sibyl-35","LAST_TOPIC":"clashroyale"} ---> sibyl-control (QUEUE)
+            // sibyl ---> SUBSCRIPTION(sibyl-35)
+            // usuario ---> UNSUBSCRIBE(sibyl-control) SUBSCRIPTION(sibyl-35) y SUBSCRIPTION(clashroyale)
+            // sibyl ---> {"LAST_MESSAGES":"...","CHATROOM":"clashroyale"} ---> sibyl-35 (QUEUE)
+
+            Queue sibylControlQueue = session.createQueue("sibylcontrol");
+            sibylControlProducer = session.createProducer(sibylControlQueue);
+            sibylControlConsumer = session.createConsumer(sibylControlQueue);
+
+            // Tras autenticarse con sibyl, recibirá un mensaje con el topic al que debe
+            // suscribirse (último topic abierto). Si se acaba de registrar, es "general"
+            // TODO realizar este paso después de la autenticación con sibyl
             Topic chatTopic = session.createTopic("clase");
             MessageConsumer subscriber = session.createConsumer(chatTopic);
             msgProducer = session.createProducer(chatTopic);
 
-            // subscriber = mySess.createConsumer(chatTopic);
+            // fijar el handler de los mensajes.
+            // TODO pueden y deberían ser distintas funciones, refactor
             subscriber.setMessageListener(this);
-            magiConsumer.setMessageListener(this);
+            sibylControlConsumer.setMessageListener(this);
             connection.start();
         } catch (JMSException ex) {
             ex.printStackTrace();

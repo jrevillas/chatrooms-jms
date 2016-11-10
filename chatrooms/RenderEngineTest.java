@@ -32,7 +32,7 @@ public class RenderEngineTest {
     public static BufferedReader br;
 
     public static void main(String[] args) {
-        Consumidor instancia = new Consumidor();
+        FancyConsumer consumer = new FancyConsumer();
 
         RenderEngine.addMessage("[@" + PURPLE + "dmelero" + RESET + "] This is a test message.");
         RenderEngine.addMessage("[@" + CYAN + "jruiz" + RESET + "] This is another test message.");
@@ -62,14 +62,14 @@ public class RenderEngineTest {
 
                 RenderEngine.render();
 
-                MapMessage message = Consumidor.session.createMapMessage();
-                message.setInt("MSG_TYPE", 5);
+                MapMessage message = FancyConsumer.session.createMapMessage();
+                message.setInt("MSG_TYPE", 0);
                 message.setString("MSG_CONTENT", msgPrefix + input);
-                message.setString("USER", "Revillas");
-                message.setString("CHATROOM", "ClashRoyale");
-                Consumidor.msgProducer.send(message);
+                message.setString("MSG_USER", "Revillas");
+                message.setString("MSG_CHATROOM", "ClashRoyale");
+                FancyConsumer.topicProducer.send(message);
 
-//                RenderEngine.render();
+                // RenderEngine.render();
             }
         } catch (Exception e) {
             e.printStackTrace();

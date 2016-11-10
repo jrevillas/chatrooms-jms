@@ -32,7 +32,7 @@ public class DynamicProducer {
             Connection connection = connectionFactory.createConnection();
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-            Topic topic = session.createTopic("clase");
+            Topic topic = session.createTopic("ClashRoyale");
             Queue sibylQueue = session.createQueue("sibyl");
 
             MessageProducer msgProducer = session.createProducer(topic);
@@ -103,7 +103,7 @@ public class DynamicProducer {
             }
 
             // Mensaje con menciones
-            if (msgType == 6) {
+            if (msgType == 1) {
                 scanner = new Scanner(System.in);
                 System.out.print("MSG_CONTENT (string): ");
                 String msgContent = scanner.nextLine();
@@ -114,9 +114,9 @@ public class DynamicProducer {
 
                 message.setInt("MSG_TYPE", msgType);
                 message.setString("MSG_CONTENT", BOT_PREFIX + msgContent);
-                message.setString("MENTIONS", joinedMentions);
-                message.setString("USER", "Revillas");
-                message.setString("CHATROOM", "ClashRoyale");
+                message.setString("MSG_MENTIONS", joinedMentions);
+                message.setString("MSG_USER", "Revillas");
+                message.setString("MSG_CHATROOM", "ClashRoyale");
                 return message;
             }
 
