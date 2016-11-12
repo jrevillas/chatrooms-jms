@@ -1,45 +1,85 @@
 package sibyl;
 
 import database.Chatroom;
+import database.Database;
 import database.StdMessage;
 import database.User;
 
 import javax.jms.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Launcher implements javax.jms.MessageListener {
 
-    // Definimos las diferentes acciones, lo ponemos como string, solo deja así las claves
-    // Luego veremos si se puede hacer con una clase enumeración
-    private static final int MSG_JOIN = 0;
-    private static final int MSG_LEAVE = 1;
-    private static final int MSG_CREATE = 2;
-    private static final int MSG_UPDATE_PASSWD = 3;
-    private static final int MSG_CH_CHATROOM = 4;
-    private static final int MSG = 5;
-    private static final int MSG_MENTIONS = 6;
-    private static final int MSG_LAST = 7;
-
+    public static Map<String, UserConnection> map;
+    public static Map<String, ChatroomConnection> topicMap;
     private static ConnectionFactory myConnFactory;
     private static Connection myConn;
-    private static Session subSession;
-    private static Topic chatTopic;
+    public static Session subSession;
     private static Queue sibylQueue;
-
 
     public Launcher() {
         try {
             myConnFactory = new com.sun.messaging.ConnectionFactory();
             myConn = myConnFactory.createConnection();
             subSession = myConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            chatTopic = subSession.createTopic("clase");
+            // chatTopic = subSession.createTopic("ClashRoyale");
 
-            sibylQueue = subSession.createQueue("sibyl");
+            map = new HashMap<String, UserConnection>();
 
-            MessageConsumer sibylSub = subSession.createConsumer(sibylQueue);
-            MessageConsumer subscriber = subSession.createConsumer(chatTopic);
-            subscriber.setMessageListener(this);
-            sibylSub.setMessageListener(this);
+            User[] arrayUsers = Database.getUsers();
+
+            for (int i = 0; i < arrayUsers.length; i++) {
+                UserConnection userConnection = new UserConnection();
+
+                String user = arrayUsers[i].getHandle();
+
+                Queue sibylQueueReq = subSession.createQueue("sibylreq" + user);
+                Queue sibylQueueRes = subSession.createQueue("sibylres" + user);
+
+                MessageConsumer consumer = subSession.createConsumer(sibylQueueReq);
+                MessageProducer producer = subSession.createProducer(sibylQueueRes);
+
+                userConnection.setHandle(user);
+
+                userConnection.setSibylConsumerM(consumer);
+                userConnection.setSibylProducerM(producer);
+
+                userConnection.setSibylReqQ(sibylQueueReq);
+                userConnection.setSibylResQ(sibylQueueRes);
+
+                // Llamaremos a SibylQueueManager cuando nos lleguen cosas por alguna cola
+                // Técnicamente, si recibimos cosas por el topic, deberíamos quedarnos aquí
+                // Basicamente, si tenemos que comunicarnos de vuelta con el usuario
+                // Lo hacemos mediante Sibyl.
+                consumer.setMessageListener(new SibylQueueManager());
+
+                map.put(user, userConnection);
+            }
+
+            topicMap = new HashMap<String, ChatroomConnection>();
+            Chatroom[] chatrooms = Database.getChatrooms();
+
+            for (int i = 0; i < chatrooms.length; i++) {
+                ChatroomConnection chatroomConnection = new ChatroomConnection();
+
+                int numberDb = i + 1;
+                System.out.println("Indexando topic " + chatrooms[i].getName() + " (topic" + numberDb +  ")");
+                Topic chatTopic = subSession.createTopic("topic" + numberDb);
+                chatroomConnection.setTopic(chatTopic);
+
+                MessageConsumer subscriber = subSession.createConsumer(chatTopic);
+                chatroomConnection.setTopicConsumer(subscriber);
+
+                MessageProducer producer = subSession.createProducer(chatTopic);
+                chatroomConnection.setTopicProducer(producer);
+
+                // Dejamos el producer en el aire por ahora
+                topicMap.put(chatrooms[i].getName(), chatroomConnection);
+                subscriber.setMessageListener(this);
+            }
+
             myConn.start();
         } catch (JMSException e) {
             e.printStackTrace();
@@ -48,101 +88,28 @@ public class Launcher implements javax.jms.MessageListener {
 
     @Override
     public void onMessage(Message msg) {
-        System.out.println("Rim Rim!!!");
-        // TODO: REFACTOR
+        System.out.println("Rim Rim Launcher!!!");
+
         try {
             MapMessage message = (MapMessage) msg;
-            int type = message.getInt("MSG_TYPE");
-            switch (type) {
-                case MSG_JOIN:
-                    MSG_JOIN(message.getString("USER"), message.getString("CHATROOM"));
-                    break;
-                case MSG_LEAVE:
-                    MSG_LEAVE(message.getString("USER"), message.getString("CHATROOM"));
-                    break;
-                case MSG_CREATE:
-                    MSG_CREATE(message.getString("USER"), message.getString("CHATROOM"));
-                    break;
-                case MSG_UPDATE_PASSWD:
-                    MSG_UPDATE_PASSWD(message.getString("USER"), message.getString("PASSWD"));
-                    break;
-                case MSG_CH_CHATROOM:
-                    MSG_CH_CHATROOM(message.getString("CHATROOM"), message.getString("NEW"));
-                    break;
-                case MSG:
-                    MSG(message.getString("MSG_CONTENT"), message.getString("USER"),
+            int type = message.getInt("TYPE");
+            switch (Types.values()[type]) {
+                case MSG_SIMPLE:
+                    MSG_SIMPLE(message.getString("CONTENT"), message.getString("USER"),
                             message.getString("CHATROOM"));
                     break;
-                case MSG_MENTIONS:
-                    MSG_MENTIONS(message.getString("MENTIONS"), message.getString("MSG_CONTENT"),
+                case MSG_WITH_MENTIONS:
+                    MSG_WITH_MENTIONS(message.getString("MENTIONS"), message.getString("CONTENT"),
                             message.getString("USER"), message.getString("CHATROOM"));
                     break;
-                case MSG_LAST:
-                    MSG_LAST(message.getString("CHATROOM"));
+
             }
         } catch (JMSException jmse) {
             jmse.printStackTrace();
         }
     }
 
-    private void MSG_JOIN (String handle, String name) {
-        User user = new User();
-        user.setHandle(handle);
-        Chatroom chatroom = new Chatroom();
-        chatroom.setName(name);
-        BotLogic.join(user, chatroom);
-    }
-
-    private void MSG_LEAVE (String handle, String name) {
-        User user = new User();
-        user.setHandle(handle);
-        Chatroom chatroom = new Chatroom();
-        chatroom.setName(name);
-        BotLogic.leave(user, chatroom);
-    }
-
-    private void MSG_CREATE (String handle, String name) {
-        User user = new User();
-        user.setHandle(handle);
-        Chatroom chatroom = new Chatroom();
-        chatroom.setName(name);
-        BotLogic.create(user, chatroom);
-
-        try {
-            MapMessage toSend = subSession.createMapMessage();
-            MessageProducer producer = subSession.createProducer(sibylQueue);
-            toSend.setInt("MSG_TYPE", MSG_CREATE);
-            toSend.setString("CHATROOM", chatroom.getName());
-            producer.send(toSend);
-        } catch (JMSException jmse) {
-            jmse.printStackTrace();
-        }
-    }
-
-    private void MSG_UPDATE_PASSWD (String handle, String passwd) {
-        User user = new User();
-        user.setHandle(handle);
-        BotLogic.changePasswd(user, passwd);
-    }
-
-    private void MSG_CH_CHATROOM(String name, String newName) {
-        Chatroom chatroom = new Chatroom();
-        chatroom.setName(name);
-        BotLogic.changeChatroomName(chatroom, newName);
-
-        try {
-            MapMessage toSend = subSession.createMapMessage();
-            MessageProducer producer = subSession.createProducer(sibylQueue);
-            toSend.setInt("MSG_TYPE", MSG_CH_CHATROOM);
-            toSend.setString("CHATROOM", chatroom.getName());
-            toSend.setString("NEW", newName);
-            producer.send(toSend);
-        } catch (JMSException jmse) {
-            jmse.printStackTrace();
-        }
-    }
-
-    private void MSG (String msgContent, String handle, String name) {
+    private void MSG_SIMPLE(String msgContent, String handle, String name) {
         StdMessage stdMessage = new StdMessage();
         stdMessage.setText(msgContent);
         User user = new User();
@@ -152,36 +119,17 @@ public class Launcher implements javax.jms.MessageListener {
         BotLogic.insertMessage(stdMessage, user, chatroom);
     }
 
-    private void MSG_MENTIONS (String msgMentions, String msgContent, String handle, String name) {
+    private void MSG_WITH_MENTIONS(String msgMentions, String msgContent, String handle, String name) {
         StdMessage stdMessage = new StdMessage();
         stdMessage.setText(msgContent);
         User user = new User();
         user.setHandle(handle);
-        Chatroom chatroom =  new Chatroom();
+        Chatroom chatroom = new Chatroom();
         chatroom.setName(name);
         BotLogic.insertMessageMentions(msgMentions, stdMessage, user, chatroom);
     }
 
-    private void MSG_LAST(String name) {
-        Chatroom chatroom = new Chatroom();
-        chatroom.setName(name);
-        String result = "";
-        StdMessage[] arrayMessages = BotLogic.getMessagesFromChatroom(chatroom);
-        for (int i = 0; i < arrayMessages.length - 1; i++) {
-            result += arrayMessages[i].getText() + "|";
-        }
-        result += result + arrayMessages[arrayMessages.length - 1].getText();
 
-        try {
-            MapMessage toSend = subSession.createMapMessage();
-            MessageProducer producer = subSession.createProducer(sibylQueue);
-            toSend.setInt("MSG_TYPE", MSG_LAST);
-            toSend.setString("MSG_CONTENT", result);
-            producer.send(toSend);
-        } catch (JMSException jmse) {
-            jmse.printStackTrace();
-        }
-    }
     public static void main(String[] args) {
         Launcher instancia = new Launcher();
         while (true) {

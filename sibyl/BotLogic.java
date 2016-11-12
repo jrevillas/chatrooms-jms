@@ -1,6 +1,9 @@
 package sibyl;
 
 import database.*;
+import org.mindrot.BCrypt;
+
+import javax.xml.crypto.Data;
 
 /**
  * Created by jruiz on 11/5/16.
@@ -34,17 +37,17 @@ public class BotLogic {
         Database.updatePassword(user);
     }
 
-    public static void changeChatroomName (Chatroom chatroom, String newName) {
+    public static void changeChatroomName(Chatroom chatroom, String newName) {
         // Llamamos a updateName para la database
         Database.updateName(chatroom, newName);
     }
 
-    public static void insertMessage (StdMessage text, User user, Chatroom chatroom) {
+    public static void insertMessage(StdMessage text, User user, Chatroom chatroom) {
         // Llamamos a insertMessage para la database
         Database.insertMessage(text, user, chatroom);
     }
 
-    public static void insertMessageMentions (String mentions, StdMessage text, User user, Chatroom chatroom) {
+    public static void insertMessageMentions(String mentions, StdMessage text, User user, Chatroom chatroom) {
         // Llamamos a insertMessage con las menciones para la database
         Database.insertMessage(text, user, chatroom, mentions);
     }
@@ -53,5 +56,18 @@ public class BotLogic {
         StdMessage[] result = Database.getMessagesFromChatroom(chatroom);
         return result;
 
+    }
+
+    public static Boolean login(User user_login) {
+        User user_db = new User();
+        user_db = Database.getUser(user_login);
+
+        // Comprobamos que los credentials estan bien
+        // Asumimos que el usuario existe por ahora
+        if (BCrypt.checkpw(user_login.getPassword(), user_db.getPassword())) {
+            System.out.println("Login correcto");
+            return true;
+        }
+        return false;
     }
 }

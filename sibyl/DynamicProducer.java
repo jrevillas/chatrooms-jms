@@ -15,21 +15,12 @@ import javax.jms.Topic;
  */
 public class DynamicProducer {
 
-    private static final int MSG_JOIN = 0;
-    private static final int MSG_LEAVE = 1;
-    private static final int MSG_CREATE = 2;
-    private static final int MSG_UPDATE_PASSWD = 3;
-    private static final int MSG_CHG_CHATROOM = 4;
-    private static final int MSG = 5;
-    private static final int MSG_MENTIONS = 6;
-    private static final int MSG_LAST = 7;
-
     public static void main(String[] args) {
         try {
             ConnectionFactory connectionFactory = new com.sun.messaging.ConnectionFactory();
             Connection connection = connectionFactory.createConnection();
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Topic topic = session.createTopic("clase");
+            Topic topic = session.createTopic("ClashRoyale");
             MessageProducer msgProducer = session.createProducer(topic);
             MapMessage message = session.createMapMessage();
 
@@ -56,10 +47,10 @@ public class DynamicProducer {
             String msg = "";
             String mentions = "";
 
-            switch (msgType) {
-                case MSG_JOIN:
-                case MSG_LEAVE:
-                case MSG_CREATE:
+            switch (Types.values()[msgType]) {
+                case REQ_USER_JOIN_ROOM:
+                case REQ_USER_LEAVE_ROOM:
+                case REQ_ROOM_CREATE:
                     scanner = new Scanner(System.in);
                     System.out.print("USER (string): ");
                     user = scanner.nextLine();
@@ -72,7 +63,7 @@ public class DynamicProducer {
                     message.setString("USER", user);
                     message.setString("CHATROOM", chatroom);
                     break;
-                case MSG_UPDATE_PASSWD:
+                case REQ_USER_CHANGE_PASSWORD:
                     scanner = new Scanner(System.in);
                     System.out.print("USER (string): ");
                     user = scanner.nextLine();
@@ -85,7 +76,7 @@ public class DynamicProducer {
                     message.setString("USER", user);
                     message.setString("PASSWD", password);
                     break;
-                case MSG_CHG_CHATROOM:
+                case REQ_ROOM_CHANGE_NAME:
                     scanner = new Scanner(System.in);
                     System.out.println("CHATROOM (string): ");
                     chatroom = scanner.nextLine();
@@ -98,12 +89,12 @@ public class DynamicProducer {
                     message.setString("CHATROOM", chatroom);
                     message.setString("NEW", newName);
                     break;
-                case MSG_MENTIONS:
+                case MSG_WITH_MENTIONS:
                     scanner = new Scanner(System.in);
                     System.out.println("MENTIONS (string): ");
                     mentions = scanner.nextLine();
                     message.setString("MENTIONS", mentions);
-                case MSG:
+                case MSG_SIMPLE:
                     System.out.println("HOLITA DESDE LA OPCION 6");
                     scanner = new Scanner(System.in);
                     System.out.println("MSG_CONTENT (string): ");
@@ -121,15 +112,6 @@ public class DynamicProducer {
                     message.setString("MSG_CONTENT", msg);
                     message.setString("USER", user);
                     message.setString("CHATROOM", chatroom);
-                    break;
-                case MSG_LAST:
-                    scanner = new Scanner(System.in);
-                    System.out.println("CHATROOM (string): ");
-                    chatroom = scanner.nextLine();
-
-                    message.setInt("MSG_TYPE", msgType);
-                    message.setString("CHATROOM", chatroom);
-
                     break;
             }
 

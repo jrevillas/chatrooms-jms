@@ -8,889 +8,903 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.mindrot.BCrypt;
 
-/**
- * Created by jruiz on 10/26/16.
- */
 public class Database {
 
-    private static Connection connection = null;
-    private static final int BCRYPT_COST = 10;
+	private static Connection connection = null;
+	private static final int BCRYPT_COST = 10;
 
-    static {
-        String host = "rpi.ruizcalle.com";
-        String usr = "root";
-        String passwd = "sandsand"/**/;
+	static {
+		String host = "rpi.ruizcalle.com";
+		String usr = "root";
+		String passwd = "sandsand"/**/;
 
-        // Obtener conexion
-        String driver = "com.mysql.jdbc.Driver";
-        String port = "3306";
-        String bd = "chatrooms";
+		// Obtener conexion
+		String driver = "com.mysql.jdbc.Driver";
+		String port = "3306";
+		String bd = "chatrooms";
 
-        try {
-            Class.forName(driver);
-            String url = "jdbc:mysql://" + host + ":" + port + "/" + bd;
-            connection = DriverManager.getConnection(url, usr, passwd);
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
-    }
+		try {
+			Class.forName(driver);
+			String url = "jdbc:mysql://" + host + ":" + port + "/" + bd;
+			connection = DriverManager.getConnection(url, usr, passwd);
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-    // INSERT
-    public static void insertUser(User user) {
-        String query = "INSERT INTO `chatrooms`.`USER` (`handle`, `password`) ";
-        query += "VALUES (?,?)";
-        String hash = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(BCRYPT_COST));
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            sentence.setString(2, hash);
-            sentence.execute();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	// INSERT
+	public static void insertUser(User user) {
 
-    public static void insertChatroom(User user, Chatroom chatroom) {
-//        System.out.println("DATABASE USER: " + user.getHandle());
-//        System.out.println("DATABASE CHATROOM NAME: " + chatroom.getName() + " AND ID: " + chatroom.getId());
-        String query = "INSERT INTO `chatrooms`.`CHATROOM` (`name`, `handle_creator`) ";
-        query += "VALUES (?,?)";
-        int last_inserted_id = 0;
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            sentence.setString(1, chatroom.getName());
-            sentence.setString(2, user.getHandle());
+		String query = "INSERT INTO `chatrooms`.`USER` (`handle`, `password`) ";
+		query += "VALUES (?,?)";
 
-            int affected_rows = sentence.executeUpdate();
-            ResultSet generatedKeys = sentence.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                chatroom.setId(generatedKeys.getInt(1));
-            }
-            generatedKeys.close();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+		String hash = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(BCRYPT_COST));
 
-    public static void insertSubscription(User user, Chatroom chatroom) {
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			sentence.setString(2, hash);
+			sentence.execute();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-        String query = "INSERT INTO `chatrooms`.`SUBSCRIPTION` (`handle_user`, `id_chatroom`) ";
-        query += "VALUES (?,?)";
+	public static void insertChatroom(User user, Chatroom chatroom) {
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            sentence.setInt(2, chatroom.getId());
-            sentence.execute();
-            sentence.close();
+		String query = "INSERT INTO `chatrooms`.`CHATROOM` (`name`, `handle_creator`) ";
+		query += "VALUES (?,?)";
 
-        } catch (SQLException e) {
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			sentence.setString(1, chatroom.getName());
+			sentence.setString(2, user.getHandle());
 
-            e.printStackTrace();
-        }
-    }
+			sentence.executeUpdate();
+			ResultSet generatedKeys = sentence.getGeneratedKeys();
 
-    public static void insertMessage(StdMessage message, User user, Chatroom chatroom) {
+			if (generatedKeys.next()) {
+				chatroom.setId(generatedKeys.getInt(1));
+			}
 
-        String query = "INSERT INTO `chatrooms`.`MESSAGE` (`text`, `handle_user`,`name_chatroom`) ";
-        query += "VALUES (?,?,?)";
+			generatedKeys.close();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, message.getText());
-            sentence.setString(2, user.getHandle());
-            sentence.setString(3, chatroom.getName());
-            sentence.execute();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	public static void insertSubscription(User user, Chatroom chatroom) {
 
-    public static void insertMessage(StdMessage message, User user, Chatroom chatroom, String ids_mentioned) {
+		String query = "INSERT INTO `chatrooms`.`subscription` (`handle_user`, `id_chatroom`) ";
+		query += "VALUES (?,?)";
 
-        String query = "INSERT INTO `chatrooms`.`MESSAGE` (`text`, `handle_user`,`name_chatroom`, `ids_mentioned`) ";
-        query += "VALUES (?,?,?,?)";
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			sentence.setInt(2, chatroom.getId());
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, message.getText());
-            sentence.setString(2, user.getHandle());
-            sentence.setString(3, chatroom.getName());
-            sentence.setString(4, ids_mentioned);
-            sentence.execute();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+			sentence.execute();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-    // DELETE
-    public static void deleteSubscription(User user, Chatroom chatroom) {
+	public static void insertMessage(StdMessage message, User user, Chatroom chatroom) {
 
-        String query = "DELETE FROM `chatrooms`.`SUBSCRIPTION` ";
-        query += "WHERE `handle_user` = ? ";
-        query += "AND `name_chatroom`= ? ";
+		String query = "INSERT INTO `chatrooms`.`MESSAGE` (`text`, `handle_user`,`name_chatroom`) ";
+		query += "VALUES (?,?,?)";
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            sentence.setInt(2, chatroom.getId());
-            sentence.execute();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, message.getText());
+			sentence.setString(2, user.getHandle());
+			sentence.setString(3, chatroom.getName());
 
-    // UPDATE
-    public static void updatePassword(User user) {
+			sentence.execute();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-        String query = "UPDATE `chatrooms`.`USER` ";
-        query += "SET `password` = ? ";
-        query += "WHERE `handle` = ? ";
+	public static void insertMessage(StdMessage message, User user, Chatroom chatroom, String ids_mentioned) {
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getPassword());
-            sentence.setString(2, user.getHandle());
-            sentence.executeUpdate();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+		String query = "INSERT INTO `chatrooms`.`MESSAGE` (`text`, `handle_user`,`name_chatroom`, `ids_mentioned`) ";
+		query += "VALUES (?,?,?,?)";
 
-    public static void updateDate_Status(User user) {
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, message.getText());
+			sentence.setString(2, user.getHandle());
+			sentence.setString(3, chatroom.getName());
+			sentence.setString(4, ids_mentioned);
 
-        String query = "UPDATE `chatrooms`.`USER` ";
-        query += "SET `last_conexion`= ?, `status`= ? ";
-        query += "WHERE `handle`= ?";
+			sentence.execute();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setTimestamp(1, user.getLast_conexion());
-            sentence.setInt(2, user.getState());
-            sentence.setString(3, user.getHandle());
-            sentence.executeUpdate();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	// DELETE
+	public static void deleteSubscription(User user, Chatroom chatroom) {
 
-    public static void updateStatus(User user) {
+		String query = "DELETE FROM `chatrooms`.`subscription` ";
+		query += "WHERE `handle_user` = ? ";
+		query += "AND `id_chatroom`= ? ";
 
-        String query = "UPDATE `chatrooms`.`USER` ";
-        query += "SET `status`= ? ";
-        query += "WHERE `handle`= ?";
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			sentence.setInt(2, chatroom.getId());
+			sentence.execute();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setInt(1, user.getState());
-            sentence.setString(2, user.getHandle());
-            sentence.executeUpdate();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	// UPDATE
+	public static void updatePassword(User user) {
 
-    public static void updateCurrentTopic(User user, Chatroom chatroom) {
+		String query = "UPDATE `chatrooms`.`USER` ";
+		query += "SET `password` = ? ";
+		query += "WHERE `handle` = ? ";
 
-        String query = "UPDATE `chatrooms`.`USER` ";
-        query += "SET `current_topic`= ? ";
-        query += "WHERE `handle`= ?";
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getPassword());
+			sentence.setString(2, user.getHandle());
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setInt(1, chatroom.getId());
-            sentence.setString(2, user.getHandle());
-            sentence.executeUpdate();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+			sentence.executeUpdate();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-    public static void updateName(Chatroom chatroom, String name) {
+	public static void updateDate_Status(User user) {
 
-        String query = "UPDATE `chatrooms`.`CHATROOM` ";
-        query += "SET `name`= ? ";
-        query += "WHERE `name`= ? ";
+		String query = "UPDATE `chatrooms`.`USER` ";
+		query += "SET `last_conexion`= ?, `status`= ? ";
+		query += "WHERE `handle`= ?";
 
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setTimestamp(1, user.getLast_conexion());
+			sentence.setInt(2, user.getState());
+			sentence.setString(3, user.getHandle());
+
+			sentence.executeUpdate();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void updateStatus(User user) {
+
+		String query = "UPDATE `chatrooms`.`USER` ";
+		query += "SET `status`= ? ";
+		query += "WHERE `handle`= ?";
+
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setInt(1, user.getState());
+			sentence.setString(2, user.getHandle());
+
+			sentence.executeUpdate();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void updateCurrentTopic(User user, Chatroom chatroom) {
+
+		String query = "UPDATE `chatrooms`.`USER` ";
+		query += "SET `current_topic`= ? ";
+		query += "WHERE `handle`= ? ";
+
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setInt(1, chatroom.getId());
+			sentence.setString(2, user.getHandle());
+
+			sentence.executeUpdate();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void updateName(Chatroom chatroom, String name) {
+
+		String query = "UPDATE `chatrooms`.`CHATROOM` ";
+		query += "SET `name`= ? ";
+		query += "WHERE `name`= ? ";
+
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1,name);
+			sentence.setString(2,chatroom.getName());
+
+			sentence.executeUpdate();
+			sentence.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// QUERIES
+	public static Chatroom[] getChatrooms() {
+
+		Chatroom[] result = null;
+
+		String query = "SELECT * ";
+		query += "FROM chatrooms.CHATROOM ";
+
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			ResultSet rs = sentence.executeQuery();
+
+			result = new Chatroom[rs.last() ? rs.getRow() : 0];
+			int i = 0;
+
+			rs.beforeFirst();
+
+			while (rs.next()) {
+
+				Chatroom chatroom = new Chatroom();
+
+				chatroom.setId(rs.getInt("id"));
+				chatroom.setName(rs.getString("name"));
+				chatroom.setHandle_creator(rs.getString("handle_creator"));
+				chatroom.setCreate_date(rs.getTimestamp("create_date"));
+
+				result[i] = chatroom;
+
+				i++;
+			}
+
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	public static int getChatroomId(String name) {
+        int result = 0;
+        String query = "SELECT * " +
+                "FROM chatrooms.CHATROOM " +
+                "WHERE name = ?";
         try {
             PreparedStatement sentence = connection.prepareStatement(query);
             sentence.setString(1, name);
-            sentence.setString(2, chatroom.getName());
-            sentence.executeUpdate();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // QUERIES
-    public static Chatroom getChatroomByName(Chatroom chatroom){
-        Chatroom result = new Chatroom();
-
-        String query = "SELECT * ";
-        query += "FROM chatrooms.CHATROOM ";
-        query += "WHERE name = ? ";
-
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1,chatroom.getName());
             ResultSet rs = sentence.executeQuery();
-
             rs.next();
-
-            result.setName(rs.getString("name"));
-            result.setHandle_creator(rs.getString("handle_creator"));
-            result.setCreate_date(rs.getTimestamp("create_date"));
-
+            result = rs.getInt("id");
             sentence.close();
             rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
 
-    public static Chatroom findChatroomById (Chatroom chatroom) {
-        Chatroom result = new Chatroom();
+	public static Chatroom getChatroomById (Chatroom chatroom) {
 
-        String query = "SELECT * ";
-        query += "FROM chatrooms.CHATROOM ";
-        query += "WHERE name = ? ";
+		Chatroom result = new Chatroom();
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setInt(1,chatroom.getId());
-            ResultSet rs = sentence.executeQuery();
+		String query = "SELECT * ";
+		query += "FROM chatrooms.CHATROOM ";
+		query += "WHERE id = ? ";
 
-            rs.next();
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setInt(1,chatroom.getId());
+			ResultSet rs = sentence.executeQuery();
 
-            result.setName(rs.getString("name"));
-            result.setHandle_creator(rs.getString("handle_creator"));
-            result.setCreate_date(rs.getTimestamp("create_date"));
+			rs.next();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			result.setId(rs.getInt("id"));
+			result.setName(rs.getString("name"));
+			result.setHandle_creator(rs.getString("handle_creator"));
+			result.setCreate_date(rs.getTimestamp("create_date"));
 
-        return result;
-    }
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-    public static User getUser(User user){
-        User result = new User();
+		return result;
+	}
 
-        String query = "SELECT * ";
-        query += "FROM chatrooms.USER ";
-        query += "WHERE handle = ? ";
+	public static Chatroom getChatroomByName(Chatroom chatroom){
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1,user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+		Chatroom result = new Chatroom();
 
-            rs.next();
+		String query = "SELECT * ";
+		query += "FROM chatrooms.CHATROOM ";
+		query += "WHERE name = ? ";
 
-            result.setHandle(rs.getString("handle"));
-            result.setPassword(rs.getString("password"));
-            result.setLast_conexion(rs.getTimestamp("last_conexion"));
-            result.setCurrent_topic(rs.getString("current_topic"));
-            result.setState(rs.getInt("status"));
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1,chatroom.getName());
+			ResultSet rs = sentence.executeQuery();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			rs.next();
 
-        return result;
-    }
+			result.setId(rs.getInt("id"));
+			result.setName(rs.getString("name"));
+			result.setHandle_creator(rs.getString("handle_creator"));
+			result.setCreate_date(rs.getTimestamp("create_date"));
 
-    public static User[] getUsers() {
-        User[] result = null;
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        String query = "SELECT * ";
-        query += "FROM chatrooms.USER ";
+		return result;
+	}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            ResultSet rs = sentence.executeQuery();
+	public static Chatroom[] getsubscriptionFromUser(User user) {
 
-            result = new User[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+		Chatroom[] result = null;
 
-            rs.beforeFirst();
+		String query = "SELECT c.name, c.handle_creator, c.create_date ";
+		query += "FROM chatrooms.CHATROOM c, chatrooms.USER u, chatrooms.subscription s ";
+		query += "WHERE u.handle = ? ";
+		query += "AND u.handle = s.handle_user ";
+		query += "AND s.id_chatroom = c.name ";
 
-            while (rs.next()) {
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			ResultSet rs = sentence.executeQuery();
 
-                User user = new User();
+			result = new Chatroom[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-                user.setHandle(rs.getString("handle"));
-                user.setPassword(rs.getString("password"));
-                user.setLast_conexion(rs.getTimestamp("last_conexion"));
-                user.setCurrent_topic(rs.getString("current_topic"));
-                user.setState(rs.getInt("status"));
+			rs.beforeFirst();
 
-                result[i] = user;
+			while (rs.next()) {
 
-                i++;
-            }
+				Chatroom chatroom = new Chatroom();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+				chatroom.setId(rs.getInt("id"));
+				chatroom.setName(rs.getString("name"));
+				chatroom.setHandle_creator(rs.getString("handle_creator"));
+				chatroom.setCreate_date(rs.getTimestamp("create_date"));
 
-        return result;
-    }
+				result[i] = chatroom;
 
-    public static User[] getUsersFromChatroom(Chatroom chatroom) {
-        User[] result = null;
+				i++;
+			}
 
-        String query = "SELECT u.handle, u.password, u.last_conexion, u.current_topic, u.status ";
-        query += "FROM chatrooms.SUBSCRIPTION s, chatrooms.USER u ";
-        query += "WHERE u.handle = s.handle_user ";
-        query += "AND s.name_chatroom = ? ";
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1,chatroom.getName());
-            ResultSet rs = sentence.executeQuery();
+		return result;
+	}
 
-            result = new User[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+	public static StdMessage[] getMessages() {
 
-            rs.beforeFirst();
+		StdMessage[] result = null;
 
-            while (rs.next()) {
+		String query = "SELECT * ";
+		query += "FROM chatrooms.MESSAGE ";
 
-                User user = new User();
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			ResultSet rs = sentence.executeQuery();
 
-                user.setHandle(rs.getString("handle"));
-                user.setPassword(rs.getString("password"));
-                user.setLast_conexion(rs.getTimestamp("last_conexion"));
-                user.setCurrent_topic(rs.getString("current_topic"));
-                user.setState(rs.getInt("status"));
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-                result[i] = user;
+			rs.beforeFirst();
 
-                i++;
-            }
+			while (rs.next()) {
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+				StdMessage message = new StdMessage();
 
-        return result;
-    }
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-    public static Chatroom[] getChatrooms() {
-        Chatroom[] result = null;
+				result[i] = message;
 
-        String query = "SELECT * ";
-        query += "FROM chatrooms.CHATROOM ";
+				i++;
+			}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            ResultSet rs = sentence.executeQuery();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            result = new Chatroom[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+		return result;
+	}
 
-            rs.beforeFirst();
+	public static StdMessage[] getMentionedMessages() {
 
-            while (rs.next()) {
+		Statement sentence = null;
+		StdMessage[] result = null;
 
-                Chatroom chatroom = new Chatroom();
+		String query = "SELECT * ";
+		query += "FROM chatrooms.MESSAGE m ";
+		query += "WHERE m.ids_mentioned IS NOT NULL ";
 
-                chatroom.setId(rs.getInt("id"));
-                chatroom.setName(rs.getString("name"));
-                chatroom.setHandle_creator(rs.getString("handle_creator"));
-                chatroom.setCreate_date(rs.getTimestamp("create_date"));
+		try {
+			sentence = connection.createStatement();
+			ResultSet rs = sentence.executeQuery(query);
 
-                result[i] = chatroom;
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-                i++;
-            }
+			rs.beforeFirst();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			while (rs.next()) {
 
-        return result;
-    }
+				StdMessage message = new StdMessage();
 
-    public static Chatroom[] getSuscriptionFromUser(User user) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-        Chatroom[] result = null;
+				result[i] = message;
 
-        String query = "SELECT c.name, c.handle_creator, c.create_date ";
-        query += "FROM chatrooms.CHATROOM c, chatrooms.USER u, chatrooms.SUBSCRIPTION s ";
-        query += "WHERE u.handle = ? ";
-        query += "AND u.handle = s.handle_user ";
-        query += "AND s.name_chatroom = c.name ";
+				i++;
+			}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            result = new Chatroom[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+		return result;
+	}
 
-            rs.beforeFirst();
+	public static StdMessage[] getMessagesFromChatroom(Chatroom chatroom) {
 
-            while (rs.next()) {
+		StdMessage[] result = null;
 
-                Chatroom chatroom = new Chatroom();
+		String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
+		query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m ";
+		query += "WHERE c.name = m.name_chatroom ";
+		query += "AND c.name = ? ";
+		query += "ORDER BY m.id ASC ";
+		// TODO: Cambiar a 20 cuando no de problemas
+		query += "LIMIT 5";
 
-                chatroom.setName(rs.getString("name"));
-                chatroom.setHandle_creator(rs.getString("handle_creator"));
-                chatroom.setCreate_date(rs.getTimestamp("create_date"));
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, chatroom.getName());
+			ResultSet rs = sentence.executeQuery();
 
-                result[i] = chatroom;
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-                i++;
-            }
+			rs.beforeFirst();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			while (rs.next()) {
 
-        return result;
-    }
+				StdMessage message = new StdMessage();
 
-    public static User[] getSuscriptionFromChatroom(Chatroom chatroom) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-        User[] result = null;
+				result[i] = message;
 
-        String query = "SELECT u.handle, u.password, u.last_conexion, u.current_topic, u.status ";
-        query += "FROM chatrooms.CHATROOM c, chatrooms.USER u, chatrooms.SUBSCRIPTION s ";
-        query += "WHERE c.name = ? ";
-        query += "AND u.handle = s.handle_user ";
-        query += "AND s.name_chatroom = c.name ";
+				i++;
+			}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1,chatroom.getName());
-            ResultSet rs = sentence.executeQuery();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            result = new User[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+		return result;
+	}
 
-            rs.beforeFirst();
+	public static StdMessage[] getMessagesFromUser(User user) {
 
-            while (rs.next()) {
+		StdMessage[] result = null;
 
-                User user = new User();
+		String query = "SELECT m.id, m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
+		query += "FROM chatrooms.MESSAGE m, chatrooms.USER u ";
+		query += "WHERE u.handle = m.handle_user ";
+		query += "AND u.handle = ?";
 
-                user.setHandle(rs.getString("handle"));
-                user.setPassword(rs.getString("password"));
-                user.setLast_conexion(rs.getTimestamp("last_conexion"));
-                user.setCurrent_topic(rs.getString("current_topic"));
-                user.setState(rs.getInt("status"));
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			ResultSet rs = sentence.executeQuery();
 
-                result[i] = user;
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-                i++;
-            }
+			rs.beforeFirst();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			while (rs.next()) {
 
-        return result;
-    }
+				StdMessage message = new StdMessage();
 
-    public static String getHash(User user) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-        String result = "";
+				result[i] = message;
 
-        String query = "SELECT u.password ";
-        query += "FROM chatrooms.USER u ";
-        query += "WHERE u.handle = ? ";
+				i++;
+			}
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            rs.next();
+		return result;
+	}
 
-            result = rs.getString("password");
+	public static StdMessage[] getMessagesInChatroomByUser(User user, Chatroom chatroom) {
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+		StdMessage[] result = null;
 
-        return result;
-    }
+		String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
+		query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m, chatrooms.USER u ";
+		query += "WHERE c.name = m.name_chatroom ";
+		query += "AND u.handle = ? ";
+		query += "AND c.name = ?";
 
-    public static StdMessage[] getMessages() {
-        StdMessage[] result = null;
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			sentence.setString(2, chatroom.getName());
+			ResultSet rs = sentence.executeQuery();
 
-        String query = "SELECT * ";
-        query += "FROM chatrooms.MESSAGE ";
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            ResultSet rs = sentence.executeQuery();
+			rs.beforeFirst();
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+			while (rs.next()) {
 
-            rs.beforeFirst();
+				StdMessage message = new StdMessage();
 
-            while (rs.next()) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-                StdMessage message = new StdMessage();
+				result[i] = message;
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+				i++;
+			}
 
-                result[i] = message;
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-                i++;
-            }
+		return result;
+	}
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+	public static StdMessage[] getMentionsToUser(User user, Chatroom chatroom) {
 
-        return result;
-    }
+		StdMessage[] result = null;
 
-    public static StdMessage[] getMessagesFromUser(User user) {
+		String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
+		query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m, chatrooms.USER u ";
+		query += "WHERE m.ids_mentioned IS NOT NULL ";
+		query += "AND c.name = ? ";
+		query += "AND c.name = m.name_chatroom ";
+		query += "AND u.handle = ? ";
+		query += "AND m.ids_mentioned LIKE CONCAT('%',u.handle,'%') ";
 
-        StdMessage[] result = null;
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, chatroom.getName());
+			sentence.setString(2, user.getHandle());
+			ResultSet rs = sentence.executeQuery();
 
-        String query = "SELECT m.id, m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
-        query += "FROM chatrooms.MESSAGE m, chatrooms.USER u ";
-        query += "WHERE u.handle = m.handle_user ";
-        query += "AND u.handle = ?";
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+			rs.beforeFirst();
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+			while (rs.next()) {
 
-            rs.beforeFirst();
+				StdMessage message = new StdMessage();
 
-            while (rs.next()) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-                StdMessage message = new StdMessage();
+				result[i] = message;
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+				i++;
+			}
 
-                result[i] = message;
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-                i++;
-            }
+		return result;
+	}
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+	public static StdMessage[] getMentionsToUserAll(User user) {
 
-        return result;
-    }
+		StdMessage[] result = null;
 
-    public static StdMessage[] getMessagesFromChatroom(Chatroom chatroom) {
+		String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
+		query += "FROM chatrooms.MESSAGE m, chatrooms.USER u ";
+		query += "WHERE m.ids_mentioned IS NOT NULL ";
+		query += "AND u.handle = ? ";
+		query += "AND m.ids_mentioned LIKE CONCAT('%',u.handle,'%') ";
 
-        StdMessage[] result = null;
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			ResultSet rs = sentence.executeQuery();
 
-        String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
-        query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m ";
-        query += "WHERE c.name = m.name_chatroom ";
-        query += "AND c.name = ? ";
-        query += "LIMIT 5";
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, chatroom.getName());
-            ResultSet rs = sentence.executeQuery();
+			rs.beforeFirst();
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+			while (rs.next()) {
 
-            rs.beforeFirst();
+				StdMessage message = new StdMessage();
 
-            while (rs.next()) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-                StdMessage message = new StdMessage();
+				result[i] = message;
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+				i++;
+			}
 
-                result[i] = message;
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-                i++;
-            }
+		return result;
+	}
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+	public static StdMessage[] getUserMentions(User user) {
 
-        return result;
-    }
+		StdMessage[] result = null;
 
-    public static StdMessage[] getMessagesInChatroomByUser(User user, Chatroom chatroom) {
+		String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
+		query += "FROM chatrooms.MESSAGE m, chatrooms.USER u ";
+		query += "WHERE u.handle = m.handle_user ";
+		query += "AND m.ids_mentioned IS NOT NULL ";
+		query += "AND u.handle = ?";
 
-        StdMessage[] result = null;
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1, user.getHandle());
+			ResultSet rs = sentence.executeQuery();
 
-        String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
-        query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m, chatrooms.USER u ";
-        query += "WHERE c.name = m.name_chatroom ";
-        query += "AND u.handle = ? ";
-        query += "AND c.name = ?";
+			result = new StdMessage[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            sentence.setString(2, chatroom.getName());
-            ResultSet rs = sentence.executeQuery();
+			rs.beforeFirst();
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+			while (rs.next()) {
 
-            rs.beforeFirst();
+				StdMessage message = new StdMessage();
 
-            while (rs.next()) {
+				message.setText(rs.getString("text"));
+				message.setHandle_user(rs.getString("handle_user"));
+				message.setName_chatroom(rs.getString("name_chatroom"));
+				message.setIds_mentioned(rs.getString("ids_mentioned"));
+				message.setSend_date(rs.getTimestamp("send_date"));
 
-                StdMessage message = new StdMessage();
+				result[i] = message;
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+				i++;
+			}
 
-                result[i] = message;
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-                i++;
-            }
+		return result;
+	}
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+	public static User getUser(User user){
 
-        return result;
-    }
+		User result = new User();
 
-    public static StdMessage[] getMentionedMessages() {
-        Statement sentence = null;
-        StdMessage[] result = null;
+		String query = "SELECT * ";
+		query += "FROM chatrooms.USER ";
+		query += "WHERE handle = ? ";
 
-        String query = "SELECT * ";
-        query += "FROM chatrooms.MESSAGE m ";
-        query += "WHERE m.ids_mentioned IS NOT NULL ";
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1,user.getHandle());
+			ResultSet rs = sentence.executeQuery();
 
-        try {
-            sentence = connection.createStatement();
-            ResultSet rs = sentence.executeQuery(query);
+			rs.next();
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+			result.setHandle(rs.getString("handle"));
+			result.setPassword(rs.getString("password"));
+			result.setLast_conexion(rs.getTimestamp("last_conexion"));
+			result.setCurrent_topic(rs.getString("current_topic"));
+			result.setState(rs.getInt("status"));
 
-            rs.beforeFirst();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            while (rs.next()) {
+		return result;
+	}
 
-                StdMessage message = new StdMessage();
+	public static User[] getsubscriptionFromChatroom(Chatroom chatroom) {
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+		User[] result = null;
 
-                result[i] = message;
+		String query = "SELECT u.handle, u.password, u.last_conexion, u.current_topic, u.status ";
+		query += "FROM chatrooms.CHATROOM c, chatrooms.USER u, chatrooms.subscription s ";
+		query += "WHERE c.name = ? ";
+		query += "AND u.handle = s.handle_user ";
+		query += "AND s.id_chatroom = c.name ";
 
-                i++;
-            }
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1,chatroom.getName());
+			ResultSet rs = sentence.executeQuery();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			result = new User[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        return result;
-    }
+			rs.beforeFirst();
 
-    public static StdMessage[] getUserMentions(User user) {
+			while (rs.next()) {
 
-        StdMessage[] result = null;
+				User user = new User();
 
-        String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
-        query += "FROM chatrooms.MESSAGE m, chatrooms.USER u ";
-        query += "WHERE u.handle = m.handle_user ";
-        query += "AND m.ids_mentioned IS NOT NULL ";
-        query += "AND u.handle = ?";
+				user.setHandle(rs.getString("handle"));
+				user.setPassword(rs.getString("password"));
+				user.setLast_conexion(rs.getTimestamp("last_conexion"));
+				user.setCurrent_topic(rs.getString("current_topic"));
+				user.setState(rs.getInt("status"));
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+				result[i] = user;
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+				i++;
+			}
 
-            rs.beforeFirst();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            while (rs.next()) {
+		return result;
+	}
 
-                StdMessage message = new StdMessage();
+	public static User[] getUsers() {
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+		User[] result = null;
 
-                result[i] = message;
+		String query = "SELECT * ";
+		query += "FROM chatrooms.USER ";
 
-                i++;
-            }
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			ResultSet rs = sentence.executeQuery();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			result = new User[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        return result;
-    }
+			rs.beforeFirst();
 
-    public static StdMessage[] getMentionsToUserAll(User user) {
+			while (rs.next()) {
 
-        StdMessage[] result = null;
+				User user = new User();
 
-        String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
-        query += "FROM chatrooms.MESSAGE m, chatrooms.USER u ";
-        query += "WHERE m.ids_mentioned IS NOT NULL ";
-        query += "AND u.handle = ? ";
-        query += "AND m.ids_mentioned LIKE CONCAT('%',u.handle,'%') ";
+				user.setHandle(rs.getString("handle"));
+				user.setPassword(rs.getString("password"));
+				user.setLast_conexion(rs.getTimestamp("last_conexion"));
+				user.setCurrent_topic(rs.getString("current_topic"));
+				user.setState(rs.getInt("status"));
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+				result[i] = user;
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+				i++;
+			}
 
-            rs.beforeFirst();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            while (rs.next()) {
+		return result;
+	}
 
-                StdMessage message = new StdMessage();
+	public static User[] getUsersFromChatroom(Chatroom chatroom) {
 
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
+		User[] result = null;
 
-                result[i] = message;
+		String query = "SELECT u.handle, u.password, u.last_conexion, u.current_topic, u.status ";
+		query += "FROM chatrooms.subscription s, chatrooms.USER u ";
+		query += "WHERE u.handle = s.handle_user ";
+		query += "AND s.id_chatroom = ? ";
 
-                i++;
-            }
+		try {
+			PreparedStatement sentence = connection.prepareStatement(query);
+			sentence.setString(1,chatroom.getName());
+			ResultSet rs = sentence.executeQuery();
 
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			result = new User[rs.last() ? rs.getRow() : 0];
+			int i = 0;
 
-        return result;
-    }
+			rs.beforeFirst();
 
-    public static StdMessage[] getMentionsToUser(User user, Chatroom chatroom) {
+			while (rs.next()) {
 
-        StdMessage[] result = null;
+				User user = new User();
 
-        String query = "SELECT m.text, m.handle_user, m.name_chatroom, m.ids_mentioned, m.send_date ";
-        query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m, chatrooms.USER u ";
-        query += "WHERE m.ids_mentioned IS NOT NULL ";
-        query += "AND c.name = ? ";
-        query += "AND c.name = m.name_chatroom ";
-        query += "AND u.handle = ? ";
-        query += "AND m.ids_mentioned LIKE CONCAT('%',u.handle,'%') ";
+				user.setHandle(rs.getString("handle"));
+				user.setPassword(rs.getString("password"));
+				user.setLast_conexion(rs.getTimestamp("last_conexion"));
+				user.setCurrent_topic(rs.getString("current_topic"));
+				user.setState(rs.getInt("status"));
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, chatroom.getName());
-            sentence.setString(2, user.getHandle());
-            ResultSet rs = sentence.executeQuery();
+				result[i] = user;
 
-            result = new StdMessage[rs.last() ? rs.getRow() : 0];
-            int i = 0;
+				i++;
+			}
 
-            rs.beforeFirst();
+			sentence.close();
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-            while (rs.next()) {
+		return result;
+	}
 
-                StdMessage message = new StdMessage();
-
-                message.setText(rs.getString("text"));
-                message.setHandle_user(rs.getString("handle_user"));
-                message.setName_chatroom(rs.getString("name_chatroom"));
-                message.setIds_mentioned(rs.getString("ids_mentioned"));
-                message.setSend_date(rs.getTimestamp("send_date"));
-
-                result[i] = message;
-
-                i++;
-            }
-
-            sentence.close();
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return result;
-    }
 }
