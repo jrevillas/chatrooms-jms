@@ -16,12 +16,15 @@ import javax.jms.Topic;
  */
 public class FancyConsumer implements javax.jms.MessageListener {
 
+    // cualquier objeto se puede usar como un mutex al usarlo en un bloque synchronized
+    public static Object mutex = new Object();
+
     private static final String USER_HANDLE = "jrevillas";
     private static final String USER_PASSWORD = "12345";
 
     public static Session session;
     private static MessageConsumer sibylConsumer;
-    private static MessageProducer sibylProducer;
+    public static MessageProducer sibylProducer;
     private static Queue sibylRequests;
     private static Queue sibylResponses;
 
@@ -55,7 +58,7 @@ public class FancyConsumer implements javax.jms.MessageListener {
             // sibyl -SEND-> sibylresRevillas -RECV-> user1
             //               ----------------
 
-            topic = session.createTopic("ClashRoyale");
+            topic = session.createTopic("topic0");
             topicConsumer = session.createConsumer(topic);
             topicProducer = session.createProducer(topic);
             topicConsumer.setMessageListener(this);
@@ -76,25 +79,40 @@ public class FancyConsumer implements javax.jms.MessageListener {
         try {
             MapMessage mapMsg = (MapMessage) msg;
             if (mapMsg.getJMSDestination() instanceof Topic) {
-                // System.out.println("Acaba de entrar un msg desde un topic");
-                if (mapMsg.getInt("MSG_TYPE") == 0) {
-                    RenderEngine.addMessage(mapMsg.getString("MSG_CONTENT"));
+                if (mapMsg.getInt("TYPE") == 0) {
+                    RenderEngine.addMessage(mapMsg.getString("CONTENT"));
                 }
             }
-            // System.out.println("MSG_CONTENT -> " + mapMsg.getString("MSG_CONTENT"));
+
+            if (mapMsg.getJMSDestination() instanceof Queue) {
+                if (mapMsg.getInt("TYPE") == MessageType.RES_ROOM_CREATE.ordinal()) {
+                    RenderEngine.addTopic(mapMsg.getString("CHATROOM"));
+                }
+
+                if (mapMsg.getInt("TYPE") == MessageType.RES_ROOM_CHANGE_NAME.ordinal()) {
+                    for (int i = 0; i < RenderEngine.getTopics().size(); i++) {
+                        if (RenderEngine.getTopics().get(i).equals(mapMsg.getString("CHATROOM"))) {
+                            RenderEngine.getTopics().set(i, mapMsg.getString("NEW"));
+                            break;
+                        }
+                    }
+                }
+            }
 
             System.out.print("\n");
-            RenderEngine.render();
+            synchronized (mutex) {
+                RenderEngine.render();
+            }
         } catch (JMSException e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        FancyConsumer fc = new FancyConsumer();
+        new FancyConsumer();
         while (true) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(Long.MAX_VALUE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

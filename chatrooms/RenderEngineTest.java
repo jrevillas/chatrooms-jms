@@ -29,13 +29,17 @@ public class RenderEngineTest {
 
     private static final String msgPrefix = "[@" + RED + "jrevillas" + RESET + "] ";
 
+    public static String userHandle = "Revillas"; // TODO dynamic update
+    public static String userChatroom = "lobby"; // TODO dynamic update
+
+
     public static BufferedReader br;
 
     public static void main(String[] args) {
         FancyConsumer consumer = new FancyConsumer();
 
         RenderEngine.addMessage("[@" + PURPLE + "dmelero" + RESET + "] This is a test message.");
-        RenderEngine.addMessage("[@" + CYAN + "jruiz" + RESET + "] This is another test message.");
+        RenderEngine.addMessage("[@" + YELLOW + "jruiz" + RESET + "] This is another test message.");
         RenderEngine.addMessage("[@" + GREEN + "mnunez" + RESET + "] This is just another test message.");
 
         RenderEngine.getTopics().add("general");
@@ -55,21 +59,18 @@ public class RenderEngineTest {
         try {
             while (true) {
                 br = new BufferedReader(new InputStreamReader(System.in));
-                // System.out.print(" > ");
                 String input = br.readLine();
-                // br.close();
-                // RenderEngine.addMessage(msgPrefix + input);
 
-                RenderEngine.render();
-
-                MapMessage message = FancyConsumer.session.createMapMessage();
-                message.setInt("MSG_TYPE", 0);
-                message.setString("MSG_CONTENT", msgPrefix + input);
-                message.setString("MSG_USER", "Revillas");
-                message.setString("MSG_CHATROOM", "ClashRoyale");
-                FancyConsumer.topicProducer.send(message);
-
-                // RenderEngine.render();
+                if (input.startsWith("/")) {
+                    SlashInterpreter.handle(input);
+                } else {
+                    MapMessage message = FancyConsumer.session.createMapMessage();
+                    message.setInt("TYPE", 0);
+                    message.setString("CONTENT", msgPrefix + input);
+                    message.setString("USER", "Revillas");
+                    message.setString("CHATROOM", "lobby");
+                    FancyConsumer.topicProducer.send(message);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

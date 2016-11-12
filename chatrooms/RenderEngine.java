@@ -98,6 +98,8 @@ public class RenderEngine {
         str.append(" > ");
 
         System.out.print(str.toString());
+        // Wingardium Leviosa
+        // System.out.flush();
     }
 
     private static void renderMessages() {
