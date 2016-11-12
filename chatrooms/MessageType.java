@@ -80,6 +80,7 @@ public enum MessageType {
     /**
      * TYPE       int      12
      * USER       String   "jruiz"
+     * PASSWORD   String   "123456"
      */
     REQ_LOGIN,
 

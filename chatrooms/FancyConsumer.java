@@ -58,7 +58,7 @@ public class FancyConsumer implements javax.jms.MessageListener {
             // sibyl -SEND-> sibylresRevillas -RECV-> user1
             //               ----------------
 
-            topic = session.createTopic("topic0");
+            topic = session.createTopic("topic1");
             topicConsumer = session.createConsumer(topic);
             topicProducer = session.createProducer(topic);
             topicConsumer.setMessageListener(this);
@@ -96,6 +96,23 @@ public class FancyConsumer implements javax.jms.MessageListener {
                             break;
                         }
                     }
+                }
+
+                if (mapMsg.getInt("TYPE") == MessageType.RES_LOGIN.ordinal() && mapMsg.getBoolean("STATUS")) {
+                    String topicsAsString = mapMsg.getString("TOPICS");
+                    System.out.println("TOPICS - " + topicsAsString);
+                    String[] topics = topicsAsString.split("\\|");
+                    for (String topic : topics) {
+                        RenderEngine.addTopic(topic);
+                    }
+
+                    String lobbyMessagesAsString = mapMsg.getString("CONTENT");
+                    System.out.println("CONTENT - " + lobbyMessagesAsString);
+                    String[] lobbyMessages = lobbyMessagesAsString.split("\\|");
+                    for (String message : lobbyMessages) {
+                        RenderEngine.addMessage(message);
+                    }
+
                 }
             }
 

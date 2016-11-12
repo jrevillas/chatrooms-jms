@@ -109,11 +109,13 @@ public class RenderEngine {
     }
 
     private static void renderTopics() {
-        scene[1] = " ┌ #" + rightPad(topics.get(0).toString(), 15) + " [ ] ┐";
-        for (int i = 1; i < topics.size() - 1; i++) {
-            scene[i + 1] = " │ #" + rightPad(topics.get(i).toString(), 15) + " [ ] │";
+        if (topics.size() != 0) {
+            scene[1] = " ┌ #" + rightPad(topics.get(0).toString(), 15) + " [ ] ┐";
+            for (int i = 1; i < topics.size() - 1; i++) {
+                scene[i + 1] = " │ #" + rightPad(topics.get(i).toString(), 15) + " [ ] │";
+            }
+            scene[topics.size()] = " └ #" + rightPad(topics.get(topics.size() - 1).toString(), 15) + " [ ] ┘";
         }
-        scene[topics.size()] = " └ #" + rightPad(topics.get(topics.size() - 1).toString(), 15) + " [ ] ┘";
 
         for (int i = 1; i < scene.length - topics.size(); i++) {
             scene[topics.size() + i] = rightPad("", 25);

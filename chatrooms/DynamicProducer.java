@@ -33,7 +33,7 @@ public class DynamicProducer {
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
             Topic topic = session.createTopic("ClashRoyale");
-            Queue sibylQueue = session.createQueue("sibyl");
+            Queue sibylQueue = session.createQueue("sibylreqRevillas");
 
             MessageProducer msgProducer = session.createProducer(topic);
             MessageProducer sibylProducer = session.createProducer(sibylQueue);
@@ -42,7 +42,7 @@ public class DynamicProducer {
 
             while (true) {
                 message = askForMessage(message);
-                if (message.getInt("MSG_TYPE") == 2 || message.getInt("MSG_TYPE") == 4 || message.getInt("MSG_TYPE") == 7) {
+                if (message.getInt("TYPE") > 0) {
                     System.out.println("[\u001B[32mINFO\u001B[0m] Sending message to Sibyl...");
                     sibylProducer.send(message);
                 } else {
@@ -63,18 +63,18 @@ public class DynamicProducer {
             System.out.print("MSG_TYPE (int): ");
             int msgType = scanner.nextInt();
 
-            if (msgType == 2) {
+            if (msgType == 3) {
                 scanner = new Scanner(System.in);
                 System.out.print("CHATROOM (string): ");
                 String msgContent = scanner.nextLine();
-                message.setInt("MSG_TYPE", msgType);
+                message.setInt("TYPE", msgType);
                 // message.setString("MSG_CONTENT", BOT_PREFIX + msgContent);
                 message.setString("USER", "Revillas");
                 message.setString("CHATROOM", msgContent);
                 return message;
             }
 
-            if (msgType == 4) {
+            if (msgType == 2) {
                 scanner = new Scanner(System.in);
                 System.out.print("CHATROOM (string): ");
                 String chatRoomName = scanner.nextLine();
@@ -83,7 +83,7 @@ public class DynamicProducer {
                 System.out.print("NEW (string): ");
                 String newName = scanner.nextLine();
 
-                message.setInt("MSG_TYPE", msgType);
+                message.setInt("TYPE", msgType);
                 // message.setString("MSG_CONTENT", BOT_PREFIX + msgContent);
                 message.setString("NEW", newName);
                 message.setString("CHATROOM", chatRoomName);

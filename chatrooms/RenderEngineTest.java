@@ -1,5 +1,6 @@
 package chatrooms;
 
+import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.TextMessage;
 import java.io.BufferedReader;
@@ -35,20 +36,27 @@ public class RenderEngineTest {
 
     public static BufferedReader br;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JMSException {
         FancyConsumer consumer = new FancyConsumer();
 
-        RenderEngine.addMessage("[@" + PURPLE + "dmelero" + RESET + "] This is a test message.");
-        RenderEngine.addMessage("[@" + YELLOW + "jruiz" + RESET + "] This is another test message.");
-        RenderEngine.addMessage("[@" + GREEN + "mnunez" + RESET + "] This is just another test message.");
+        //RenderEngine.addMessage("[@" + PURPLE + "dmelero" + RESET + "] This is a test message.");
+        //RenderEngine.addMessage("[@" + YELLOW + "jruiz" + RESET + "] This is another test message.");
+        //RenderEngine.addMessage("[@" + GREEN + "mnunez" + RESET + "] This is just another test message.");
 
-        RenderEngine.getTopics().add("general");
-        RenderEngine.getTopics().add("consejo-datsi");
-        RenderEngine.getTopics().add("consejo-dia");
-        RenderEngine.getTopics().add("consejo-dlsis");
-        RenderEngine.getTopics().add("consejo-dmatic");
+        //RenderEngine.getTopics().add("general");
+        //RenderEngine.getTopics().add("consejo-datsi");
+        //RenderEngine.getTopics().add("consejo-dia");
+        //RenderEngine.getTopics().add("consejo-dlsis");
+        //RenderEngine.getTopics().add("consejo-dmatic");
 
         RenderEngine.render();
+
+        // Hardcoded login
+        MapMessage message = FancyConsumer.session.createMapMessage();
+        message.setInt("TYPE", MessageType.REQ_LOGIN.ordinal());
+        message.setString("PASSWORD", "estas");
+        message.setString("USER", "Revillas");
+        FancyConsumer.sibylProducer.send(message);
 
         while (true) {
             scan();
