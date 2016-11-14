@@ -4,39 +4,26 @@ import java.sql.Timestamp;
 
 public class Chatroom {
 
-	private int id;
-	private String name;
-	private String handle_creator;
-	private Timestamp create_date;
+    private int id;
+    private String name;
+    private String handle_creator;
+    private Timestamp create_date;
 
-	public Chatroom(){
-	}
+    public Chatroom() {}
 
-	public int getId() { return id; }
+    public int getId() { return id; }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() { return name; }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public Chatroom setName(String name) { this.name = name; return this; }
 
-	public String getHandle_creator() {
-		return handle_creator;
-	}
+    public String getHandle_creator() { return handle_creator; }
 
-	public void setHandle_creator(String handle_creator) {
-		this.handle_creator = handle_creator;
-	}
+    public Chatroom setHandle_creator(String handle_creator) { this.handle_creator = handle_creator; return this; }
 
-	public Timestamp getCreate_date() {
-		return create_date;
-	}
+    public Timestamp getCreate_date() { return create_date; }
 
-	public void setCreate_date(Timestamp create_date) {
-		this.create_date = create_date;
-	}
+    public Chatroom setCreate_date(Timestamp create_date) { this.create_date = create_date; return this; }
 
-	public void setId (int id) { this.id = id; }
+    public Chatroom setId(int id) { this.id = id; return this; }
 }

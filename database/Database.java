@@ -10,13 +10,14 @@ import org.mindrot.BCrypt;
 
 public class Database {
 
+    private static final int BCRYPT_COST = 10;
+
 	private static Connection connection = null;
-	private static final int BCRYPT_COST = 10;
 
 	static {
 		String host = "rpi.ruizcalle.com";
 		String usr = "root";
-		String passwd = "sandsand"/**/;
+		String passwd = "sandsand";
 
 		// Obtener conexion
 		String driver = "com.mysql.jdbc.Driver";
@@ -258,14 +259,11 @@ public class Database {
 
 			while (rs.next()) {
 
-				Chatroom chatroom = new Chatroom();
-
-				chatroom.setId(rs.getInt("id"));
-				chatroom.setName(rs.getString("name"));
-				chatroom.setHandle_creator(rs.getString("handle_creator"));
-				chatroom.setCreate_date(rs.getTimestamp("create_date"));
-
-				result[i] = chatroom;
+				result[i] = new Chatroom()
+                        .setId(rs.getInt("id"))
+                        .setName(rs.getString("name"))
+                        .setHandle_creator(rs.getString("handle_creator"))
+                        .setCreate_date(rs.getTimestamp("create_date"));
 
 				i++;
 			}
@@ -300,8 +298,6 @@ public class Database {
 
 	public static Chatroom getChatroomById (Chatroom chatroom) {
 
-		Chatroom result = new Chatroom();
-
 		String query = "SELECT * ";
 		query += "FROM chatrooms.CHATROOM ";
 		query += "WHERE id = ? ";
@@ -313,10 +309,11 @@ public class Database {
 
 			rs.next();
 
-			result.setId(rs.getInt("id"));
-			result.setName(rs.getString("name"));
-			result.setHandle_creator(rs.getString("handle_creator"));
-			result.setCreate_date(rs.getTimestamp("create_date"));
+            Chatroom result = new Chatroom()
+                    .setId(rs.getInt("id"))
+                    .setName(rs.getString("name"))
+                    .setHandle_creator(rs.getString("handle_creator"))
+                    .setCreate_date(rs.getTimestamp("create_date"));
 
 			sentence.close();
 			rs.close();
@@ -324,12 +321,10 @@ public class Database {
 			e.printStackTrace();
 		}
 
-		return result;
+		return null;
 	}
 
-	public static Chatroom getChatroomByName(Chatroom chatroom){
-
-		Chatroom result = new Chatroom();
+	public static Chatroom getChatroomByName(Chatroom chatroom) {
 
 		String query = "SELECT * ";
 		query += "FROM chatrooms.CHATROOM ";
@@ -342,18 +337,21 @@ public class Database {
 
 			rs.next();
 
-			result.setId(rs.getInt("id"));
-			result.setName(rs.getString("name"));
-			result.setHandle_creator(rs.getString("handle_creator"));
-			result.setCreate_date(rs.getTimestamp("create_date"));
+            Chatroom result = new Chatroom()
+                    .setId(rs.getInt("id"))
+                    .setName(rs.getString("name"))
+                    .setHandle_creator(rs.getString("handle_creator"))
+                    .setCreate_date(rs.getTimestamp("create_date"));
 
 			sentence.close();
 			rs.close();
+
+            return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		return result;
+		return null;
 	}
 
 	public static Chatroom[] getsubscriptionFromUser(User user) {
@@ -371,21 +369,24 @@ public class Database {
 			sentence.setString(1, user.getHandle());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new Chatroom[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				Chatroom chatroom = new Chatroom();
-
-				chatroom.setId(rs.getInt("id"));
-				chatroom.setName(rs.getString("name"));
-				chatroom.setHandle_creator(rs.getString("handle_creator"));
-				chatroom.setCreate_date(rs.getTimestamp("create_date"));
-
-				result[i] = chatroom;
+                result[i] = new Chatroom()
+                        .setId(rs.getInt("id"))
+                        .setName(rs.getString("name"))
+                        .setHandle_creator(rs.getString("handle_creator"))
+                        .setCreate_date(rs.getTimestamp("create_date"));
 
 				i++;
 			}
@@ -410,22 +411,25 @@ public class Database {
 			PreparedStatement sentence = connection.prepareStatement(query);
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -452,22 +456,25 @@ public class Database {
 			sentence = connection.createStatement();
 			ResultSet rs = sentence.executeQuery(query);
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -498,22 +505,25 @@ public class Database {
 			sentence.setString(1, chatroom.getName());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -541,22 +551,25 @@ public class Database {
 			sentence.setString(1, user.getHandle());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -586,22 +599,25 @@ public class Database {
 			sentence.setString(2, chatroom.getName());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -633,22 +649,25 @@ public class Database {
 			sentence.setString(2, user.getHandle());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -677,22 +696,25 @@ public class Database {
 			sentence.setString(1, user.getHandle());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -721,22 +743,25 @@ public class Database {
 			sentence.setString(1, user.getHandle());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new StdMessage[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				StdMessage message = new StdMessage();
-
-				message.setText(rs.getString("text"));
-				message.setHandle_user(rs.getString("handle_user"));
-				message.setName_chatroom(rs.getString("name_chatroom"));
-				message.setIds_mentioned(rs.getString("ids_mentioned"));
-				message.setSend_date(rs.getTimestamp("send_date"));
-
-				result[i] = message;
+                result[i] = new StdMessage()
+                        .setText(rs.getString("text"))
+                        .setHandle_user(rs.getString("handle_user"))
+                        .setName_chatroom(rs.getString("name_chatroom"))
+                        .setIds_mentioned(rs.getString("ids_mentioned"))
+                        .setSend_date(rs.getTimestamp("send_date"));
 
 				i++;
 			}
@@ -750,9 +775,7 @@ public class Database {
 		return result;
 	}
 
-	public static User getUser(User user){
-
-		User result = new User();
+	public static User getUser(User user) {
 
 		String query = "SELECT * ";
 		query += "FROM chatrooms.USER ";
@@ -765,19 +788,22 @@ public class Database {
 
 			rs.next();
 
-			result.setHandle(rs.getString("handle"));
-			result.setPassword(rs.getString("password"));
-			result.setLast_conexion(rs.getTimestamp("last_conexion"));
-			result.setCurrent_topic(rs.getString("current_topic"));
-			result.setState(rs.getInt("status"));
+            User result = new User()
+                    .setHandle(rs.getString("handle"))
+                    .setPassword(rs.getString("password"))
+                    .setLast_conexion(rs.getTimestamp("last_conexion"))
+                    .setCurrent_topic(rs.getString("current_topic"))
+                    .setState(rs.getInt("status"));
 
 			sentence.close();
 			rs.close();
+
+            return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		return result;
+		return null;
 	}
 
 	public static User[] getsubscriptionFromChatroom(Chatroom chatroom) {
@@ -795,22 +821,25 @@ public class Database {
 			sentence.setString(1,chatroom.getName());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new User[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				User user = new User();
-
-				user.setHandle(rs.getString("handle"));
-				user.setPassword(rs.getString("password"));
-				user.setLast_conexion(rs.getTimestamp("last_conexion"));
-				user.setCurrent_topic(rs.getString("current_topic"));
-				user.setState(rs.getInt("status"));
-
-				result[i] = user;
+                result[i] = new User()
+                        .setHandle(rs.getString("handle"))
+                        .setPassword(rs.getString("password"))
+                        .setLast_conexion(rs.getTimestamp("last_conexion"))
+                        .setCurrent_topic(rs.getString("current_topic"))
+                        .setState(rs.getInt("status"));
 
 				i++;
 			}
@@ -835,22 +864,25 @@ public class Database {
 			PreparedStatement sentence = connection.prepareStatement(query);
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new User[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				User user = new User();
-
-				user.setHandle(rs.getString("handle"));
-				user.setPassword(rs.getString("password"));
-				user.setLast_conexion(rs.getTimestamp("last_conexion"));
-				user.setCurrent_topic(rs.getString("current_topic"));
-				user.setState(rs.getInt("status"));
-
-				result[i] = user;
+                result[i] = new User()
+                        .setHandle(rs.getString("handle"))
+                        .setPassword(rs.getString("password"))
+                        .setLast_conexion(rs.getTimestamp("last_conexion"))
+                        .setCurrent_topic(rs.getString("current_topic"))
+                        .setState(rs.getInt("status"));
 
 				i++;
 			}
@@ -878,22 +910,25 @@ public class Database {
 			sentence.setString(1,chatroom.getName());
 			ResultSet rs = sentence.executeQuery();
 
+            // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()
+            // La llamada a last() mueve el puntero al último resultado. Creo que es mucho mejor
+            // tener una ArrayList, ir insertando los resultados y devolver el toArray al final.
+            // TODO implementar como ArrayList
 			result = new User[rs.last() ? rs.getRow() : 0];
 			int i = 0;
 
 			rs.beforeFirst();
 
+            // TODO si estás inicializando una variable de control e incrementándola a mano en cada iteración del
+            //      bucle, no uses un while porque estás haciendo un for.
 			while (rs.next()) {
 
-				User user = new User();
-
-				user.setHandle(rs.getString("handle"));
-				user.setPassword(rs.getString("password"));
-				user.setLast_conexion(rs.getTimestamp("last_conexion"));
-				user.setCurrent_topic(rs.getString("current_topic"));
-				user.setState(rs.getInt("status"));
-
-				result[i] = user;
+                result[i] = new User()
+                        .setHandle(rs.getString("handle"))
+                        .setPassword(rs.getString("password"))
+                        .setLast_conexion(rs.getTimestamp("last_conexion"))
+                        .setCurrent_topic(rs.getString("current_topic"))
+                        .setState(rs.getInt("status"));
 
 				i++;
 			}
