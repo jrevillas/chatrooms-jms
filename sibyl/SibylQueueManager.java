@@ -1,6 +1,5 @@
 package sibyl;
 
-import com.sun.deploy.util.StringUtils;
 import database.Chatroom;
 import database.Database;
 import database.StdMessage;
