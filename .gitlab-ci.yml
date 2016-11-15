@@ -1,0 +1,9 @@
+image: openjdk:latest
+
+build:
+  before_script:
+    - export CLASSPATH=.:/builds/j.revillas/chatrooms-jms/lib/imq.jar
+    - export CLASSPATH=$CLASSPATH:/builds/j.revillas/chatrooms-jms/lib/jms.jar
+    - export CLASSPATH=$CLASSPATH:/builds/j.revillas/chatrooms-jms/lib/twitter-text-1.14.1.jar
+    - export CLASSPATH=$CLASSPATH:/builds/j.revillas/chatrooms-jms/lib/jbcrypt-0.2.jar
+  script: "bash compile.sh"
