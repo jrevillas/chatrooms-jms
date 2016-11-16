@@ -10,7 +10,7 @@
 1. [Arquitectura de comunicación](#Arquitectura-de-comunicación)
   11. [Elementos de la arquitectura](#Elementos-de-la-arquitectura)
   12. [Métodos de comunicación](#Métodos-de-comunicación)
-2. [Despliegue remoto del entorno](#Despliegue-remoto-del-entorno)
+2. [Despliegue remoto del entorno](#despliegue-remoto-del-entorno)
 3. [Interfaz de texto](#Interfaz-de-texto)
 4. [Interfaz gráfica](#Interfaz-gráfica)
 5. [Base de datos](#Base-de-datos)
@@ -65,7 +65,20 @@ _Sibyl_ utiliza la clase _SibylQueueManager_ para poder gestionar las dos colas 
 
 En el caso de que _Sibyl_ necesite acceder a la base de datos, tanto para realizar operaciones o consultas, lo hará mediante la clase _BotLogic_.
 
+<a name="despliegue-remoto-del-entorno"/>
 ## Despliegue remoto del entorno
+
+El despligue se ha realizado sobre la infraestructura de Google Cloud para
+contenedores Docker. Se ha utilizado un único cluster para el despliegue de
+`imqbrokerd`. Solamente se han expuesto los puertos 7676, 7677 y 7679.
+
+![Despliegue de imqbroker en GKE](http://i.imgur.com/9goxgRQ.png)
+
+Google Container Engine (GKE) ofrece la interfaz de Kubernetes para gestionar la
+propia infraestructura de contenedores subyacente. Desde Kubernetes se pueden
+lanzar más contenedores y controlar los recursos que consumen.
+
+![Despliegue de imqbroker en GKE](http://i.imgur.com/VRfFBbi.png)
 
 ## Interfaz de texto
 
