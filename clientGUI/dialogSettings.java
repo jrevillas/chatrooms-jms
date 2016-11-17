@@ -3,30 +3,48 @@ package clientGUI;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class dialogSettings extends JDialog {
+public class DialogSettings extends JDialog {
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
-    private JTextField textField1;
-    private JButton changeHandlerButton;
-    private JPasswordField passwordField1;
-    private JButton changePasswordButton;
-    private JButton logoutButton;
+    private JTextField fieldHandler;
+    private JButton buttonHandler;
+    private JButton buttonPassword;
+    private JButton buttonLogout;
+    private JPasswordField passwordField;
+    private int result;
 
-    public dialogSettings() {
+    int getResult() {
+        return result;
+    }
+
+    String getPassword() {
+        return String.valueOf(passwordField.getPassword());
+    }
+
+    String getHandler() {
+        return fieldHandler.getText();
+    }
+
+    DialogSettings() {
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
+        buttonHandler.addActionListener(e -> {
+            result = 1;
+            dispose();
         });
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
+        buttonPassword.addActionListener(e -> {
+            if (this.getPassword().length() > 0) {
+                result = 2;
+                dispose();
+            }
+            JOptionPane.showMessageDialog(this, "You haven't entered any password");
+        });
+
+        buttonLogout.addActionListener(e ->  {
+            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to logout?") == 0) {
+                result = 3;
+                dispose();
             }
         });
 
@@ -34,32 +52,11 @@ public class dialogSettings extends JDialog {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onCancel();
+                dispose();
             }
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    }
-
-    private void onOK() {
-        // add your code here
-        dispose();
-    }
-
-    private void onCancel() {
-        // add your code here if necessary
-        dispose();
-    }
-
-    public static void main(String[] args) {
-        dialogSettings dialog = new dialogSettings();
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
+        contentPane.registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 }
