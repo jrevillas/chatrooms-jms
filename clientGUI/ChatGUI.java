@@ -48,17 +48,16 @@ public class ChatGUI {
      * UTILS
      **/
     private GenericDomainTableModel<MessageGUI> modelMessages;
-    private GenericDomainTableModel<Chatroom> modelRooms;
+    private GenericDomainTableModel<ChatroomGUI> modelRooms;
     private GenericDomainTableModel<User> modelUsers;
 
-    private User user;
-    private Chatroom chatroom;
+    static User user;
+    private ChatroomGUI chatroom;
     private DynamicProducerGUI producer;
 
-    private static String topicString;
     private static int login = -2;
     public Session session;
-
+    private Language lan;
 
     /**
      * <b>FUNCTION:</b> constructor
@@ -88,6 +87,7 @@ public class ChatGUI {
             do {
                 login();
                 while (login == -2) {
+                    // TODO colocar aqui algo que solo avance cuando consumer reciba respuesta de tipo LOGIN_RESPONSE
                 }
                 if (login == 0) {
                     JOptionPane.showMessageDialog(null, "Welcome back " + user.getHandle(),
@@ -108,13 +108,13 @@ public class ChatGUI {
         } catch (JMSException e) {
             JOptionPane.showMessageDialog(null, "Connection Exception, check your connectivity",
                     "ERROR", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
     }
 
     /**
      * <b>FUNCTION:</b> login method
      *
-     * @return
      */
     private void login() {
         MapMessage logMess;
@@ -123,11 +123,10 @@ public class ChatGUI {
         dialog.setLocationRelativeTo(panelGeneral);
         dialog.setVisible(true);
         // Login method in LoginDialog
-        if (dialog.getClosed()) {
+        if (user == null) {
             JOptionPane.showMessageDialog(panelGeneral, "Bye bye", "Bye, bye", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-        user = dialog.getUser();
         try {
             logMess = session.createMapMessage();
             logMess.setInt("TYPE", Types.REQ_LOGIN.ordinal());
@@ -150,7 +149,7 @@ public class ChatGUI {
             for (String topic : topicArray) {
                 createRoom(topic);
             }
-            changeRoom(topicArray[0]);
+            changeRoom(0);
         }
 
     }
@@ -168,8 +167,7 @@ public class ChatGUI {
      */
     private void initializeTables() {
         // Rooms
-        DefaultTableCellRenderer renderRooms = new MyTableCellRenderer(0, false);
-        modelRooms = new GenericDomainTableModel<Chatroom>(Arrays.asList(new String[]{"icon", "name"})) {
+        modelRooms = new GenericDomainTableModel<ChatroomGUI>(Arrays.asList(new String[]{"icon", "name", "messageCount"})) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 switch (columnIndex) {
@@ -177,6 +175,8 @@ public class ChatGUI {
                         return ImageIcon.class;
                     case 1:
                         return String.class;
+                    case 2:
+                        return int.class;
                     default:
                         return null;
                 }
@@ -184,12 +184,14 @@ public class ChatGUI {
 
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
-                Chatroom topicRow = this.getDomainObject(rowIndex);
+                ChatroomGUI chatroom = this.getDomainObject(rowIndex);
                 switch (columnIndex) {
                     case 0:
-                        return new ImageIcon(getClass().getResource("/clientGUI/resources/example.png"));
+                        return chatroom.getIcon();
                     case 1:
-                        return topicRow.getName();
+                        return chatroom.getName();
+                    case 2:
+                        return chatroom.getUnreadMessages();
                     default:
                         return null;
                 }
@@ -197,13 +199,19 @@ public class ChatGUI {
 
             @Override
             public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-                Chatroom topicRow = this.getDomainObject(rowIndex);
+                ChatroomGUI topicRow = this.getDomainObject(rowIndex);
                 switch (columnIndex) {
                     case 0:
                         break;
                     case 1:
                         topicRow.setName((String) aValue);
                         break;
+                    case 2:
+                        break;
+                    case 3:
+                        topicRow.setMention();
+                        break;
+
                 }
             }
 
@@ -224,15 +232,17 @@ public class ChatGUI {
         tableRooms.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         tableRooms.getColumn("icon").setMinWidth(72);
         tableRooms.getColumn("icon").setMaxWidth(72);
+        tableRooms.getColumn("messageCount").setMinWidth(40);
+        tableRooms.getColumn("messageCount").setMaxWidth(40);
         //       tableRooms.getColumn ( "icon" ).setCellRenderer ( renderRooms );
-        tableRooms.getColumn("name").setCellRenderer(renderRooms);
+        tableRooms.getColumn("name").setCellRenderer(new MyTableCellRenderer(0, false));
+        tableRooms.getColumn("messageCount").setCellRenderer(new MyTableCellRenderer(3, true));
         tableRooms.getTableHeader().setUI(null);
         tableRooms.setRowHeight(72);
         tableRooms.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int row = tableRooms.rowAtPoint(e.getPoint());
-                changeRoom((String) tableRooms.getValueAt(row, 1));
+                changeRoom(tableRooms.rowAtPoint(e.getPoint()));
             }
         });
         // Messages
@@ -319,6 +329,7 @@ public class ChatGUI {
                 message = session.createMapMessage();
                 message.setInt("TYPE", Types.MSG_SIMPLE.ordinal());
                 message.setString("CHATROOM", chatroom.getName());
+                //message.setString("CHATROOM", "clash_royale");
                 message.setString("CONTENT", text);
                 message.setString("USER", user.getHandle());
                 producer.sendMessage(message);
@@ -329,6 +340,20 @@ public class ChatGUI {
         }
     }
 
+    void newMessage(MessageGUI message) {
+        String chatname = message.getChatroom();
+        boolean active = chatname.equals(this.chatroom.getName()) && printMessage(message);
+        for (ChatroomGUI chatroom : modelRooms.getDomainObjects()) {
+            if (chatroom.getName().equals(chatname)) {
+                chatroom.newMessage(message, active);
+                modelRooms.notifyTableRowsUpdated(0, modelRooms.getRowCount());
+                break;
+            }
+        }
+
+
+    }
+
     /**
      * <b>FUNCTION:</b> join or create to a new room
      */
@@ -336,11 +361,12 @@ public class ChatGUI {
         DialogJoinRoom dialog = new DialogJoinRoom();
         dialog.setMinimumSize(new Dimension(300, 200));
         dialog.setLocationRelativeTo(panelGeneral);
+        dialog.setResizable(false);
         dialog.setVisible(true);
         Chatroom res = dialog.getChatroom();
         if (res != null) {
-            modelRooms.addRow(res);
-            this.changeRoom(res.getName());
+            modelRooms.addRow((ChatroomGUI) res);
+            this.changeRoom(modelRooms.getDataSize() - 1);
             // TODO <- implement join to a new topic
         }
     }
@@ -359,7 +385,7 @@ public class ChatGUI {
                 modelRooms.deleteRow(roomName);
                 // TODO <- Implementar metodo salir de un topic
                 this.buttonRoomName.setText("");
-                this.changeRoom("");
+                this.changeRoom(0);
             }
         }
     }
@@ -369,52 +395,62 @@ public class ChatGUI {
      *
      * @param message the message to print
      */
-    void printMessage(MessageGUI message) {
+    private boolean printMessage(MessageGUI message) {
         modelMessages.addRow(message);
         tableMessages.scrollRectToVisible(tableMessages
                 .getCellRect(tableMessages.getRowCount() - 1, 0, true));
+        return true;
     }
 
     /**
      * <b>FUNCTION</b> changes the room displayed to the passed in the argument
      */
-    private void changeRoom(String topicName) {
-        if (topicName.length() == 0) {
-            Chatroom row = modelRooms.getFirst();
-            if (row == null)
+    private void changeRoom(int index) {
+        if (index == 0)
+            if (modelRooms.getFirst() == null)
                 return;
-            topicName = row.getName();
-        }
         modelMessages.clearTableModelData();
         modelUsers.clearTableModelData();
-        buttonRoomName.setText(topicName);
-        chatroom = new Chatroom();
-        chatroom.setName(topicName);
+        chatroom = modelRooms.getDomainObject(index);
+        chatroom.setZeroMessages();
+        modelRooms.notifyTableRowsUpdated(index, index);
+        buttonRoomName.setText(chatroom.getName());
+        modelMessages.addRows(chatroom.getMessages());
         // TODO <- Implementar metodo recuperar mensajes y usuarios
     }
 
     /**
      * <b>FUNCTION:</b> open the settings panel
      */
+
     private void openSettings() {
         DialogSettings dialog = new DialogSettings();
-        dialog.setMinimumSize(new Dimension(300, 200));
-        dialog.setLocationRelativeTo(panelGeneral);
+        dialog.setMinimumSize(new Dimension(375, 200));
         dialog.setResizable(false);
-        dialog.pack();
+        dialog.setLocationRelativeTo(panelGeneral);
         dialog.setVisible(true);
-        dialog.setLocationRelativeTo(this.frame);
         switch (dialog.getResult()) {
             case 1:
-                System.out.println(dialog.getHandler());
+                setLanguage();
                 break;
             case 2:
-                System.out.println(dialog.getPassword());
+                System.out.println(dialog.getHandler());
                 break;
             case 3:
+                System.out.println(dialog.getPassword());
+                break;
+            case 4:
                 logout();
                 break;
         }
+    }
+
+    private void setLanguage() {
+        lan = new Language();
+        buttonLeaveRoom.setText(lan.getProperty("chLeaveRoom"));
+        buttonNewRoom.setText(lan.getProperty("chNewRoom"));
+        buttonSend.setText(lan.getProperty("send"));
+        buttonSettings.setText(lan.getProperty("settings"));
     }
 
     void changeRoomName(String chatroom, String aNew) {
@@ -427,7 +463,7 @@ public class ChatGUI {
     }
 
     void createRoom(String chatroom) {
-        modelRooms.addRow(new Chatroom().setName(chatroom));
+        modelRooms.addRow(new ChatroomGUI().setName(chatroom));
     }
 
     public static void main(String[] args) {

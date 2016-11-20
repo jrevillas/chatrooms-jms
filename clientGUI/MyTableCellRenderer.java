@@ -32,6 +32,12 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
                                                    boolean hasFocus, int row, int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
                 row, column);
+        if (color == 3) {
+            if (0 == (int) table.getValueAt(row, column))
+                this.setForeground(Color.WHITE);
+            else
+                this.setForeground (Color.BLACK);
+        }
         if (color == 1)
             this.setForeground ( Color.GRAY );
         else if (color == 2) {
@@ -43,6 +49,7 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
             }
             this.setForeground ( color );
         }
+
         setBorder ( BorderFactory.createCompoundBorder ( getBorder (), BorderFactory.createEmptyBorder ( 0, 4, 0 ,0 ) ) );
         return this;
     }

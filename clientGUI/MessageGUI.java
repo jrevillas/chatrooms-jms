@@ -8,6 +8,7 @@ class MessageGUI {
     private String text;
     private String handle_user;
     private Date send_date;
+    private String chatroom;
 
     MessageGUI(){
         send_date = new Date();
@@ -37,6 +38,15 @@ class MessageGUI {
 
     MessageGUI setDate(long date) {
         send_date = new Date(date);
+        return this;
+    }
+
+    String getChatroom() {
+        return chatroom;
+    }
+
+    MessageGUI setChatroom(String chatroom) {
+        this.chatroom = chatroom;
         return this;
     }
 }

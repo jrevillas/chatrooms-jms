@@ -75,8 +75,9 @@ public class FancyConsumerGUI implements javax.jms.MessageListener {
                     MessageGUI message = new MessageGUI()
                             .setText(mapMsg.getString("CONTENT"))
                             .setDate(mapMsg.getJMSTimestamp())
-                            .setHandle_user(mapMsg.getString("USER"));
-                    chatGUI.printMessage(message);
+                            .setHandle_user(mapMsg.getString("USER"))
+                            .setChatroom(mapMsg.getString("CHATROOM"));
+                    chatGUI.newMessage(message);
                 }
             }
 

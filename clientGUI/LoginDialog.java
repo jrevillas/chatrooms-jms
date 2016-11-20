@@ -16,12 +16,14 @@ public class LoginDialog extends JDialog {
     private JLabel labelInfo;
     private User user;
     private boolean closed = false;
-    private int login = -2;
+    Language lan;
 
     public LoginDialog() {
+        lan = new Language();
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
+        this.setLanguage();
 
         buttonOK.addActionListener(e -> onOK());
 
@@ -44,20 +46,19 @@ public class LoginDialog extends JDialog {
         char[] pwd = passwordField.getPassword();
         passwordField.setText("");
         if (usr.length() == 0)
-            JOptionPane.showMessageDialog(this, "You must specify an username");
+            JOptionPane.showMessageDialog(this, lan.getProperty("logErrUsr"));
         else if (pwd.length == 0)
-            JOptionPane.showMessageDialog(this, "You must specify a pwd");
+            JOptionPane.showMessageDialog(this, lan.getProperty("logErrPwd"));
         else {
-            user = new User().setHandle(usr).setPassword(Arrays.toString(pwd));
+            ChatGUI.user = new User().setHandle(usr).setPassword(Arrays.toString(pwd));
             dispose();
         }
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public boolean getClosed() {
-        return closed;
+    private void setLanguage() {
+        this.labelInfo.setText(lan.getProperty("logLabInfo"));
+        this.labelPassword.setText(lan.getProperty("pwd"));
+        this.labelUsername.setText(lan.getProperty("usr"));
+        this.buttonOK.setText(lan.getProperty("ok"));
     }
 }

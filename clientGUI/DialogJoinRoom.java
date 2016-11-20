@@ -17,8 +17,11 @@ public class DialogJoinRoom extends JDialog {
     private JPanel panelButtons;
     private JPanel panelDown;
     private Chatroom chatroom;
+    private Language lan;
 
     DialogJoinRoom() {
+        lan = new Language();
+        this.setLanguage();
         setContentPane ( contentPane );
         setModal ( true );
         getRootPane ().setDefaultButton ( buttonOK );
@@ -26,18 +29,18 @@ public class DialogJoinRoom extends JDialog {
 
         buttonOK.addActionListener (e -> onOK ());
 
-        buttonCancel.addActionListener (e -> onCancel ());
+        buttonCancel.addActionListener (e -> dispose ());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation ( DO_NOTHING_ON_CLOSE );
         addWindowListener ( new WindowAdapter () {
             public void windowClosing(WindowEvent e) {
-                onCancel ();
+                dispose ();
             }
         } );
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction (e -> onCancel (), KeyStroke.getKeyStroke
+        contentPane.registerKeyboardAction (e -> dispose (), KeyStroke.getKeyStroke
                 ( KeyEvent.VK_ESCAPE, 0 ), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
     }
 
@@ -45,11 +48,11 @@ public class DialogJoinRoom extends JDialog {
         String topicName = textName.getText();
         String iconName = textIcon.getText ();
         if (topicName.length () > 16)
-            JOptionPane.showMessageDialog(this, "Try with a smaller name (lees than 16 chars)", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, lan.getProperty("joiNameLeng"), "Error", JOptionPane.ERROR_MESSAGE);
         else if (topicName.length () == 0)
-            JOptionPane.showMessageDialog(this, "C'mon where is your imagination", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, lan.getProperty("joiEmptyName"), "Error", JOptionPane.ERROR_MESSAGE);
         else if (iconName.length () != 0 && getClass ().getResource ( "clientGUI/resources/" + iconName ) == null)
-            JOptionPane.showMessageDialog(this, "Nice try, but I can't find that icon", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, lan.getProperty("joiNoIcon"), "Error", JOptionPane.ERROR_MESSAGE);
         else if (textName.getText ().length () != 0 ) {
             chatroom = new Chatroom();
             chatroom.setName(topicName);
@@ -57,20 +60,14 @@ public class DialogJoinRoom extends JDialog {
         }
     }
 
-    private void onCancel() {
-        dispose ();
-    }
-
-    @Override
-    public boolean isResizable() {
-        return false;
+    private void setLanguage() {
+        this.labelName.setText(lan.getProperty("joiRoom"));
+        this.labelIcon.setText(lan.getProperty("joiRoomIc"));
+        this.buttonOK.setText(lan.getProperty("ok"));
+        this.buttonCancel.setText(lan.getProperty("cancel"));
     }
 
     public Chatroom getChatroom(){
         return chatroom;
-    }
-
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
     }
 }
