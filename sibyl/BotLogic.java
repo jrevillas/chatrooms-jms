@@ -30,7 +30,7 @@ public class BotLogic {
         User user = Database.getUser(handle);
 
         // Asumimos que el usuario está perfectamente logeado
-        user.setPassword(newPasswd);
+        user.setPassword(BCrypt.hashpw(newPasswd, BCrypt.gensalt(10)));
 
         // Suponemos que desde el momento que se pulsa enter, la contraseña se cifra,
         // Es decir, que a este punto, la contraseña nos llega ya cifrada
@@ -62,12 +62,19 @@ public class BotLogic {
         User user_db = new User();
         user_db = Database.getUser(user_login);
 
+        // Si el usuario no existe, login incorrecto
+        if (user_db == null) {
+            return false;
+        }
+
         // Comprobamos que los credentials estan bien
-        // Asumimos que el usuario existe por ahora
+        System.out.println("USER_LOGIN -> " + user_login.getPassword());
+        System.out.println("USER_LOGIN -> " + user_db.getPassword());
         if (BCrypt.checkpw(user_login.getPassword(), user_db.getPassword())) {
-            System.out.println("Login correcto");
+            System.out.println("LOGIN CORRECTO - " + user_login.getHandle());
             return true;
         }
+        System.out.println("LOGIN INCORRECTO - " + user_login.getHandle());
         return false;
     }
 }

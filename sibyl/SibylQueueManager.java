@@ -1,5 +1,6 @@
 package sibyl;
 
+import com.sun.deploy.util.StringUtils;
 import database.Chatroom;
 import database.Database;
 import database.StdMessage;
@@ -14,6 +15,9 @@ public class SibylQueueManager implements javax.jms.MessageListener {
 
     private static final String ROCKET = "\uD83D\uDE80";
 
+    private static final String RED = "\u001B[31m";
+    private static final String RESET = "\u001B[0m";
+
     // Solo llegamos aquí cuando un usuario se comunica con Sibyl
     public SibylQueueManager() {
 
@@ -21,7 +25,7 @@ public class SibylQueueManager implements javax.jms.MessageListener {
 
     public void onMessage(Message msg) {
         try {
-            System.out.println("Rim Rim SibylQueueManager!!!");
+            System.out.println("Acaba de entrar un mensaje por SibylQueueManager");
             MapMessage message = (MapMessage) msg;
             int type = message.getInt("TYPE");
 
@@ -36,12 +40,17 @@ public class SibylQueueManager implements javax.jms.MessageListener {
                     REQ_ROOM_CREATE(message.getString("USER"), message.getString("CHATROOM"));
                     break;
                 case REQ_USER_CHANGE_PASSWORD:
-                    REQ_USER_CHANGE_PASSWORD(message.getString("USER"), message.getString("PASSWORD"));
+                    REQ_USER_CHANGE_PASSWORD(message.getString("USER"), message.getString("PASSWD"));
                     break;
                 case REQ_ROOM_CHANGE_NAME:
                     REQ_ROOM_CHANGE_NAME(message.getString("CHATROOM"), message.getString("NEW"), message.getString("USER"));
                     break;
                 case REQ_LOGIN:
+                    if (message.getString("USER") == null || message.getString("PASSWORD") == null) {
+                        System.out.println("[REQ_LOGIN] " + RED + "Mensaje deforme" + RESET);
+                        break;
+                    }
+                    System.out.println("[REQ_LOGIN] USER:" + message.getString("USER") + " PASSWORD:" + message.getString("PASSWORD"));
                     REQ_LOGIN(message.getString("USER"), message.getString("PASSWORD"));
             }
 
@@ -59,7 +68,6 @@ public class SibylQueueManager implements javax.jms.MessageListener {
             MapMessage toSend = Launcher.subSession.createMapMessage();
             if (!BotLogic.login(user_login)) {
                 toSend.setInt("TYPE", Types.RES_LOGIN.ordinal());
-                System.out.println("FATAL ERROR: Are you trying to hack us?");
                 toSend.setBoolean("STATUS", false);
                 Launcher.map.get(user_login.getHandle()).getSibylProducerM().send(toSend);
             } else {
@@ -178,7 +186,7 @@ public class SibylQueueManager implements javax.jms.MessageListener {
         Chatroom chatroom = new Chatroom();
         chatroom.setName(name);
         System.out.println("CHATROOM: " + chatroom.getName() +
-        "\nNEW NAME: " + newName + "\nUSER: " + user);
+                "\nNEW NAME: " + newName + "\nUSER: " + user);
         BotLogic.changeChatroomName(chatroom, newName);
 
         User[] users = Database.getUsers();
@@ -203,8 +211,8 @@ public class SibylQueueManager implements javax.jms.MessageListener {
             toTopic.setInt("TYPE", Types.MSG_SIMPLE.ordinal());
             toTopic.setString("USER", "SibylAI");
             toTopic.setString("CHATROOM", newName);
-            toTopic.setString("CONTENT", "[\u001B[34msibyl-ai\u001B[0m] " + ROCKET + "  The user " + user + " has changed the name of the chatroom " + name + " to: " + newName
-                    + " of the topic: " + Launcher.topicMap.get(newName).getTopic());
+            toTopic.setString("CONTENT", "[\u001B[34msibyl-ai\u001B[0m] " + ROCKET + "  The user " + user +
+                    " has changed the name of " + name + " to: " + Launcher.topicMap.get(newName).getTopic().getTopicName());
             chatroomConnection.getTopicProducer().send(toTopic);
         } catch (JMSException jmse) {
             jmse.printStackTrace();
@@ -216,6 +224,11 @@ public class SibylQueueManager implements javax.jms.MessageListener {
         chatroom.setName(name);
         String result = "";
         StdMessage[] arrayMessages = BotLogic.getMessagesFromChatroom(chatroom);
+
+        if (arrayMessages.length == 0) {
+            return result;
+        }
+
         for (int i = 0; i < arrayMessages.length - 1; i++) {
             result += arrayMessages[i].getText() + "|";
         }
