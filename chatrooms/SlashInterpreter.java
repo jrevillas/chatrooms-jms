@@ -9,8 +9,24 @@ import javax.jms.MapMessage;
 public class SlashInterpreter {
 
     private static final String FLOWER = "\uD83C\uDF38 ";
+    private static final String HEART = "\uD83D\uDC9D ";
     private static final String PURPLE = "\u001B[35m";
+    private static final String RED = "\u001B[31m";
     private static final String RESET = "\u001B[0m";
+
+    private static final String msgPrefix = "[@" + RED + "jrevillas" + RESET + "] ";
+
+    private static String[] love = new String[7];
+
+    static {
+        love[0] = "  " + HEART + HEART + HEART + "  " + HEART + HEART + HEART;
+        love[1] = HEART + HEART + "  " + HEART + HEART + HEART + "  " + HEART + HEART;
+        love[2] = HEART + "      " + HEART + "      " + HEART;
+        love[3] = HEART + HEART + "          " + HEART + HEART;
+        love[4] = "  " + HEART + HEART + "      " + HEART + HEART;
+        love[5] = "    " + HEART + HEART + "  " + HEART + HEART;
+        love[6] = "        " + HEART;
+    }
 
     public static void handle(String command) throws JMSException {
         // > /slashcommand arg1 arg2
@@ -36,6 +52,14 @@ public class SlashInterpreter {
             msg.setString("USER", RenderEngineTest.userHandle);
             FancyConsumer.sibylProducer.send(msg);
         }
+        if (args[0].equals("/goto")) {
+            RenderEngine.addMessage("\u001B[30m > " + command + RESET);
+            MapMessage msg = FancyConsumer.session.createMapMessage();
+            msg.setInt("TYPE", MessageType.REQ_USER_JOIN_ROOM.ordinal());
+            msg.setString("CHATROOM", args[1]);
+            msg.setString("USER", RenderEngineTest.userHandle);
+            FancyConsumer.sibylProducer.send(msg);
+        }
         if (args[0].equals("/create")) {
             RenderEngine.addMessage("\u001B[30m > " + command + RESET);
             MapMessage msg = FancyConsumer.session.createMapMessage();
@@ -51,6 +75,16 @@ public class SlashInterpreter {
             msg.setString("USER", RenderEngineTest.userHandle);
             msg.setString("PASSWD", args[1]);
             FancyConsumer.sibylProducer.send(msg);
+        }
+        if (args[0].equals("/love")) {
+            MapMessage msg = FancyConsumer.session.createMapMessage();
+            for (String str : love) {
+                msg.setInt("TYPE", MessageType.MSG_SIMPLE.ordinal());
+                msg.setString("CONTENT", msgPrefix + str);
+                msg.setString("CHATROOM", "lobby");
+                msg.setString("USER", "Revillas");
+                FancyConsumer.topicProducer.send(msg);
+            }
         }
     }
 

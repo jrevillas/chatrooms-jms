@@ -5,87 +5,111 @@ package chatrooms;
  */
 public enum MessageType {
     /**
-     * TYPE       int      0
+     * TYPE       int
      * CHATROOM   String   "clashroyale"
      * CONTENT    String   "Mañana presentan una carta nueva."
      * USER       String   "jrevillas"
      */
     MSG_SIMPLE,
+
     /**
-     * TYPE       int      1
+     * TYPE       int
      * CHATROOM   String   "clashroyale"
      * CONTENT    String   "Creo que @jruiz y @mnunez ya la tienen."
      * MENTIONS   String   "jruiz,mnunez"
      * USER       String   "jrevillas"
      */
     MSG_WITH_MENTIONS,
+
     /**
-     * TYPE       int      2
+     * TYPE       int
      * CHATROOM   String   "dafi"
      * NAME       String   "daetsiinf"
      * USER       String   "jrevillas"
      */
     REQ_ROOM_CHANGE_NAME,
+
     /**
-     * TYPE       int      3
+     * TYPE       int
      * CHATROOM   String   "dafi"
      * USER       String   "jrevillas"'
      */
     REQ_ROOM_CREATE,
+
     /**
-     * TYPE       int      4
+     * TYPE       int
      * USER       String   "jrevillas"
      * PASSWD     String   "holita"
      */
     REQ_USER_CHANGE_PASSWORD,
+
     /**
-     * TYPE       int      5
+     * TYPE       int
      * USER       String   "jrevillas"
      * CHATROOM   String   "chatroomName"
      */
     REQ_USER_JOIN_ROOM,
+
     /**
-     * TYPE       int      6
+     * TYPE       int
      * USER       String   "jrevillas"
      * CHATROOM   String   "chatroomName"
      */
     REQ_USER_LEAVE_ROOM,
+
     /**
-     * TYPE       int      7
+     * TYPE     int
+     * CHATROOM String
+     */
+    RES_NEW_MENTION,
+
+    /**
+     * TYPE     int
+     * CHATROOM String
+     */
+    RES_NEW_MESSAGE,
+
+    /**
+     * TYPE       int
      * CHATROOM   String   "dafi"
      * NEW        String   "daetsiinf"
      * CONTENT    String   "The creator user has changed the name of this chatroom"
      */
     RES_ROOM_CHANGE_NAME,
+
     /**
-     * TYPE       int      8
+     * TYPE       int
      * CHATROOM   String   "jruiz"
      */
     RES_ROOM_CREATE,
+
     /**
-     * TYPE       int      9
+     * TYPE       int
      * STATUS     BOOLEAN  true/false
      */
     RES_USER_CHANGE_PASSWORD,
+
     /**
-     * TYPE       int      10
+     * TYPE       int
      * CONTENT    String   "newName"
      */
     RES_USER_JOIN_ROOM,
+
     /**
-     * TYPE       int      11
+     * TYPE       int
      * CONTENT    String   "last messages"
      */
     RES_USER_LEAVE_ROOM,
+
     /**
-     * TYPE       int      12
+     * TYPE       int
      * USER       String   "jruiz"
      * PASSWORD   String   "123456"
      */
     REQ_LOGIN,
 
     /**
-     * TYPE       int      13
+     * TYPE       int
      * STATUS     BOOLEAN  true/false
      * TOPICS     String   "topic1|topic2|..."
      * CONTENT    String   "last messages"

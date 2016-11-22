@@ -10,17 +10,20 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
+import java.util.ArrayList;
 
 /**
  * Created by jrevillas on 07/11/2016.
  */
 public class FancyConsumer implements javax.jms.MessageListener {
 
-    // cualquier objeto se puede usar como un mutex al usarlo en un bloque synchronized
+    private static final String RED = "\u001B[31m";
+    private static final String RESET = "\u001B[0m";
+
+    // cualquier objeto se puede utilizar como un mutex al usarlo en un bloque synchronized
     public static Object mutex = new Object();
 
-    private static final String USER_HANDLE = "jrevillas";
-    private static final String USER_PASSWORD = "12345";
+    Connection connection;
 
     public static Session session;
     private static MessageConsumer sibylConsumer;
@@ -39,10 +42,10 @@ public class FancyConsumer implements javax.jms.MessageListener {
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
             // CREATE_QUEUE(sibylreqRevillas)
-            sibylRequests = session.createQueue("sibylreq" + "Revillas");
+            sibylRequests = session.createQueue("sibylreq" + RenderEngineTest.userHandle);
 
             // CREATE_QUEUE(sibylresRevillas)
-            sibylResponses = session.createQueue("sibylres" + "Revillas");
+            sibylResponses = session.createQueue("sibylres" + RenderEngineTest.userHandle);
 
             // CREATE_PRODUCER(sibylreqRevillas)
             sibylProducer = session.createProducer(sibylRequests);
@@ -64,11 +67,6 @@ public class FancyConsumer implements javax.jms.MessageListener {
             topicConsumer.setMessageListener(this);
 
             sibylConsumer.setMessageListener(this);
-            // mapMessage msg = session.createMapMessage();
-            // msg.setString("MSG_CONTENT", "Me a request!");
-            // msg.setInt("MSG_TYPE", 0);
-            // sibylProducer.send(msg);
-            // System.out.println("SENT - {'MSG_CONTENT':'" + msg.getString("MSG_CONTENT") + "','MSG_TYPE':" + msg.getInt("MSG_TYPE") + "}");
             connection.start();
         } catch (JMSException e) {
             e.printStackTrace();
@@ -79,7 +77,7 @@ public class FancyConsumer implements javax.jms.MessageListener {
         try {
             MapMessage mapMsg = (MapMessage) msg;
             if (mapMsg.getJMSDestination() instanceof Topic) {
-                if (mapMsg.getInt("TYPE") == 0) {
+                if (mapMsg.getInt("TYPE") == MessageType.MSG_SIMPLE.ordinal() || mapMsg.getInt("TYPE") == MessageType.MSG_WITH_MENTIONS.ordinal()) {
                     RenderEngine.addMessage(mapMsg.getString("CONTENT"));
                 }
             }
@@ -87,6 +85,18 @@ public class FancyConsumer implements javax.jms.MessageListener {
             if (mapMsg.getJMSDestination() instanceof Queue) {
                 if (mapMsg.getInt("TYPE") == MessageType.RES_ROOM_CREATE.ordinal()) {
                     RenderEngine.addTopic(mapMsg.getString("CHATROOM"));
+                }
+
+                if (mapMsg.getInt("TYPE") == MessageType.RES_USER_JOIN_ROOM.ordinal()) {
+                    System.out.println("TOPIC PARA SUSCRIBIRSE: " + mapMsg.getString("TOPIC"));
+                    RenderEngineTest.userChatroom = mapMsg.getString("TOPIC");
+                    topicConsumer.close();
+                    topicProducer.close();
+                    topic = session.createTopic(mapMsg.getString("TOPIC"));
+                    topicConsumer = session.createConsumer(topic);
+                    topicProducer = session.createProducer(topic);
+                    topicConsumer.setMessageListener(this);
+                    RenderEngine.setMessages(new ArrayList<String>());
                 }
 
                 if (mapMsg.getInt("TYPE") == MessageType.RES_ROOM_CHANGE_NAME.ordinal()) {
@@ -99,6 +109,9 @@ public class FancyConsumer implements javax.jms.MessageListener {
                 }
 
                 if (mapMsg.getInt("TYPE") == MessageType.RES_LOGIN.ordinal() && mapMsg.getBoolean("STATUS")) {
+
+                    RenderEngineTest.goodLogin = true;
+
                     String topicsAsString = mapMsg.getString("TOPICS");
                     System.out.println("TOPICS - " + topicsAsString);
                     String[] topics = topicsAsString.split("\\|");
@@ -113,6 +126,10 @@ public class FancyConsumer implements javax.jms.MessageListener {
                         RenderEngine.addMessage(message);
                     }
 
+                }
+
+                if (mapMsg.getInt("TYPE") == MessageType.RES_LOGIN.ordinal() && !mapMsg.getBoolean("STATUS")) {
+                    RenderEngine.addMessage("[" + RED + "sibyl" + RESET + "] " + RED + "Autenticación incorrecta." + RESET);
                 }
             }
 
