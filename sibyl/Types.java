@@ -91,7 +91,8 @@ public enum Types {
 
     /**
      * TYPE       int
-     * CONTENT    String   "newName"
+     * CONTENT    String   "lastMessages"
+     * TOPIC      Topic    "topicx"
      */
     RES_USER_JOIN_ROOM,
 

@@ -6,4 +6,5 @@ build:
     - export CLASSPATH=$CLASSPATH:/builds/1617_grupo7/chatrooms-jms/lib/jms.jar
     - export CLASSPATH=$CLASSPATH:/builds/1617_grupo7/chatrooms-jms/lib/twitter-text-1.14.1.jar
     - export CLASSPATH=$CLASSPATH:/builds/1617_grupo7/chatrooms-jms/lib/jbcrypt-0.2.jar
+    - export CLASSPATH=$CLASSPATH:/builds/1617_grupo7/chatrooms-jms/lib/mysql-connector-java-5.0.8-bin.jar
   script: "bash compile.sh"

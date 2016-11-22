@@ -10,11 +10,20 @@ import javax.jms.Topic;
 public class ChatroomConnection {
 
     private Topic chatTopic;
+    private String topicName; // ??
     private MessageProducer topicProducer;
     private MessageConsumer topicConsumer;
 
     public ChatroomConnection() {
     }
+
+    public String getTopicName() {
+        return topicName;
+    } // ??
+
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    } // ??
 
     public Topic getTopic() {
         return chatTopic;

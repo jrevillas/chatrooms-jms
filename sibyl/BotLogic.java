@@ -59,12 +59,19 @@ public class BotLogic {
     }
 
     public static Boolean login(User user_login) {
-        User user_db = new User();
-        user_db = Database.getUser(user_login);
-
+        User user_db = Database.getUser(user_login);
+        System.out.println("User: " + user_login.getHandle() + " Password: " + user_login.getPassword());
         // Si el usuario no existe, login incorrecto
+        // TODO: ya no, ahora si el usuario no existe, se crea
+
         if (user_db == null) {
-            return false;
+            Database.insertUser(user_login);
+            System.out.println("Usuario creado con: " + user_db.getHandle());
+            // también le ponemos que esté subscrito al topic lobby
+            Chatroom chatroom = new Chatroom();
+            chatroom.setId(1);
+            Database.insertSubscription(user_login, chatroom);
+            return true;
         }
 
         // Comprobamos que los credentials estan bien

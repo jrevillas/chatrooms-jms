@@ -19,6 +19,9 @@ public class Launcher implements javax.jms.MessageListener {
     public static Session subSession;
     private static Queue sibylQueue;
 
+    private static final String RED = "\u001B[31m";
+    private static final String RESET = "\u001B[0m";
+
     public Launcher() {
         try {
             myConnFactory = new com.sun.messaging.ConnectionFactory();
@@ -65,9 +68,11 @@ public class Launcher implements javax.jms.MessageListener {
                 ChatroomConnection chatroomConnection = new ChatroomConnection();
 
                 int numberDb = i + 1;
-                System.out.println("Indexando topic " + chatrooms[i].getName() + " (topic" + numberDb +  ")");
+                System.out.println("Indexando topic " + chatrooms[i].getName() + " (topic" + numberDb + ")");
                 Topic chatTopic = subSession.createTopic("topic" + numberDb);
                 chatroomConnection.setTopic(chatTopic);
+
+                chatroomConnection.setTopicName(chatrooms[i].getName());
 
                 MessageConsumer subscriber = subSession.createConsumer(chatTopic);
                 chatroomConnection.setTopicConsumer(subscriber);
@@ -88,17 +93,26 @@ public class Launcher implements javax.jms.MessageListener {
 
     @Override
     public void onMessage(Message msg) {
-        System.out.println("Rim Rim Launcher!!!");
-
         try {
             MapMessage message = (MapMessage) msg;
+            System.out.println("USER: "+ message.getString("USER") + " \n\tand CONTENT: " + message.getString("CONTENT"));
             int type = message.getInt("TYPE");
             switch (Types.values()[type]) {
                 case MSG_SIMPLE:
+                    if (message.getString("CONTENT") == null || message.getString("USER") == null ||
+                            message.getString("CHATROOM") == null) {
+                        printError("MSG_SIMPLE");
+                        break;
+                    }
                     MSG_SIMPLE(message.getString("CONTENT"), message.getString("USER"),
                             message.getString("CHATROOM"));
                     break;
                 case MSG_WITH_MENTIONS:
+                    if (message.getString("CONTENT") == null || message.getString("USER") == null ||
+                            message.getString("CHATROOM") == null || message.getString("MENTIONS") == null) {
+                        printError("MSG_WITH_MENTIONS");
+                        break;
+                    }
                     MSG_WITH_MENTIONS(message.getString("MENTIONS"), message.getString("CONTENT"),
                             message.getString("USER"), message.getString("CHATROOM"));
                     break;
@@ -109,6 +123,12 @@ public class Launcher implements javax.jms.MessageListener {
         }
     }
 
+    private String printError(String messageType) {
+        String result = "[" + messageType + "] " + RED + "Mensaje deforme" + RESET;
+        return result;
+    }
+
+
     private void MSG_SIMPLE(String msgContent, String handle, String name) {
         StdMessage stdMessage = new StdMessage();
         stdMessage.setText(msgContent);
@@ -117,6 +137,16 @@ public class Launcher implements javax.jms.MessageListener {
         Chatroom chatroom = new Chatroom();
         chatroom.setName(name);
         BotLogic.insertMessage(stdMessage, user, chatroom);
+
+        // TODO: Notificar al usuario de que se ha hablado por la sala x
+        try {
+            MapMessage message = subSession.createMapMessage();
+            message.setInt("TYPE", Types.RES_NEW_MESSAGE.ordinal());
+            message.setString("CHATROOM", chatroom.getName());
+            sendMessages(chatroom, message);
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
     }
 
     private void MSG_WITH_MENTIONS(String msgMentions, String msgContent, String handle, String name) {
@@ -127,8 +157,28 @@ public class Launcher implements javax.jms.MessageListener {
         Chatroom chatroom = new Chatroom();
         chatroom.setName(name);
         BotLogic.insertMessageMentions(msgMentions, stdMessage, user, chatroom);
+
+        // TODO: Notificar al usuario de que se le ha mencionado
+        try {
+            MapMessage message = Launcher.subSession.createMapMessage();
+            message.setInt("TYPE", Types.RES_NEW_MENTION.ordinal());
+            message.setString("CHATROOM", chatroom.getName());
+            sendMessages(chatroom, message);
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
     }
 
+    private void sendMessages(Chatroom chatroom, Message message) {
+        User[] users = Database.getUsersFromChatroom(chatroom);
+        try {
+            for (int i = 0; i < users.length; i++) {
+                map.get(users[i].getHandle()).getSibylProducerM().send(message);
+            }
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
         Launcher instancia = new Launcher();
