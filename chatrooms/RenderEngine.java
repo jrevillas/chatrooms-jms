@@ -14,22 +14,32 @@ public class RenderEngine {
     private static int currentTopic;
     private static final String CYAN = "\u001B[36m";
     private static final String GREEN = "\u001B[32m";
-    private static List messages;
+    private static List<String> messages;
     private static final String PURPLE = "\u001B[35m";
     private static final String RED = "\u001B[31m";
     private static final String RESET = "\u001B[0m";
     private static String[] scene;
     private static final int SCENE_HEIGHT = 30;
     private static final int SCENE_WIDTH = 120;
-    private static List topics;
+    private static List<TopicWithMessages> topics;
     private static final String WHITE = "\u001B[37m";
     private static final String YELLOW = "\u001B[33m";
+
+    public static class TopicWithMessages {
+        public TopicWithMessages(String name) {
+            this.name = name;
+            this.messages = 0;
+        }
+
+        public String name;
+        public int messages;
+    }
 
     static {
         currentTopic = 0;
         messages = new LinkedList<String>();
         scene = new String[SCENE_HEIGHT - 1];
-        topics = new ArrayList<String>();
+        topics = new ArrayList<TopicWithMessages>();
 
         for (int i = 0; i < scene.length; i++) {
             scene[i] = "";
@@ -48,7 +58,7 @@ public class RenderEngine {
         return scene;
     }
 
-    public static List getTopics() {
+    public static List<TopicWithMessages> getTopics() {
         return topics;
     }
 
@@ -83,7 +93,23 @@ public class RenderEngine {
         if (topics.size() > SCENE_HEIGHT - 4) {
             topics.remove(0);
         }
-        topics.add(topic);
+        for (TopicWithMessages t : topics) {
+            if (t.name.equals(topic)) {
+                return;
+            }
+        }
+        topics.add(new TopicWithMessages(topic));
+    }
+
+    public static void notify(String topic) {
+        System.out.println("Se ha llamado a notify con el topic " + topic);
+        for (TopicWithMessages internalTopic : topics) {
+            if (internalTopic.name.equals(topic)) {
+                internalTopic.messages = internalTopic.messages + 1;
+                System.out.println("Ahora messages vale " + internalTopic.messages);
+                break;
+            }
+        }
     }
 
     public static void render() {
@@ -108,13 +134,27 @@ public class RenderEngine {
         }
     }
 
+    private static String push(int i) {
+        if (i == 0) {
+            return " ";
+        }
+        if (i < 10) {
+            return "\u001B[31m" + i + "\u001B[0m";
+        }
+        if (i >= 10) {
+            return "\u001B[31m+\u001B[0m";
+        }
+        return " ";
+    }
+
+
     private static void renderTopics() {
         if (topics.size() != 0) {
-            scene[1] = " ┌ #" + rightPad(topics.get(0).toString(), 15) + " [ ] ┐";
+            scene[1] = " ┌ #" + rightPad(topics.get(0).name, 15) + " [" + push(topics.get(0).messages) + "] ┐";
             for (int i = 1; i < topics.size() - 1; i++) {
-                scene[i + 1] = " │ #" + rightPad(topics.get(i).toString(), 15) + " [ ] │";
+                scene[i + 1] = " │ #" + rightPad(topics.get(i).name, 15) + " [" + push(topics.get(i).messages) + "] │";
             }
-            scene[topics.size()] = " └ #" + rightPad(topics.get(topics.size() - 1).toString(), 15) + " [ ] ┘";
+            scene[topics.size()] = " └ #" + rightPad(topics.get(topics.size() - 1).name, 15) + " [" + push(topics.get(topics.size() - 1).messages) + "] ┘";
         }
 
         for (int i = 1; i < scene.length - topics.size(); i++) {

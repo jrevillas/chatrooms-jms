@@ -111,6 +111,7 @@ public class RenderEngineTest {
                     message.setString("USER", userHandle);
                     message.setString("CHATROOM", userChatroom);
                     FancyConsumer.topicProducer.send(message);
+                    System.out.println("Acabas de enviar un mensaje por " + userChatroom);
                 }
             }
         } catch (Exception e) {

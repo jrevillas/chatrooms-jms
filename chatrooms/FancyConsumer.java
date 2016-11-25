@@ -87,22 +87,48 @@ public class FancyConsumer implements javax.jms.MessageListener {
                     RenderEngine.addTopic(mapMsg.getString("CHATROOM"));
                 }
 
+                if (mapMsg.getInt("TYPE") == MessageType.RES_NEW_MESSAGE.ordinal()) {
+                    String chatroom = mapMsg.getString("CHATROOM");
+                    // Si la notificación se refiere a la sala en la que estás, no hagas nada.
+                    if (chatroom.equals(RenderEngineTest.userChatroom)) {
+                        return;
+                    } else {
+                        RenderEngine.notify(chatroom);
+                    }
+                }
+
                 if (mapMsg.getInt("TYPE") == MessageType.RES_USER_JOIN_ROOM.ordinal()) {
-                    System.out.println("TOPIC PARA SUSCRIBIRSE: " + mapMsg.getString("TOPIC"));
-                    RenderEngineTest.userChatroom = mapMsg.getString("TOPIC");
+                    // System.out.println("TOPIC PARA SUSCRIBIRSE: " + mapMsg.getString("TOPIC"));
+                    RenderEngineTest.userChatroom = mapMsg.getString("CHATROOM");
                     topicConsumer.close();
                     topicProducer.close();
                     topic = session.createTopic(mapMsg.getString("TOPIC"));
                     topicConsumer = session.createConsumer(topic);
                     topicProducer = session.createProducer(topic);
                     topicConsumer.setMessageListener(this);
+
+                    // limpiar contador de notificaciones para la nueva sala
+                    for (RenderEngine.TopicWithMessages t : RenderEngine.getTopics()) {
+                        if (t.name.equals(mapMsg.getString("CHATROOM"))) {
+                            t.messages = 0;
+                            break;
+                        }
+                    }
+
                     RenderEngine.setMessages(new ArrayList<String>());
+
+                    String lobbyMessagesAsString = mapMsg.getString("CONTENT");
+                    // System.out.println("CONTENT - " + lobbyMessagesAsString);
+                    String[] lobbyMessages = lobbyMessagesAsString.split("\\|");
+                    for (String message : lobbyMessages) {
+                        RenderEngine.addMessage(message);
+                    }
                 }
 
                 if (mapMsg.getInt("TYPE") == MessageType.RES_ROOM_CHANGE_NAME.ordinal()) {
                     for (int i = 0; i < RenderEngine.getTopics().size(); i++) {
-                        if (RenderEngine.getTopics().get(i).equals(mapMsg.getString("CHATROOM"))) {
-                            RenderEngine.getTopics().set(i, mapMsg.getString("NEW"));
+                        if (RenderEngine.getTopics().get(i).name.equals(mapMsg.getString("CHATROOM"))) {
+                            RenderEngine.getTopics().get(i).name = mapMsg.getString("NEW");
                             break;
                         }
                     }
@@ -113,14 +139,14 @@ public class FancyConsumer implements javax.jms.MessageListener {
                     RenderEngineTest.goodLogin = true;
 
                     String topicsAsString = mapMsg.getString("TOPICS");
-                    System.out.println("TOPICS - " + topicsAsString);
+                    // System.out.println("TOPICS - " + topicsAsString);
                     String[] topics = topicsAsString.split("\\|");
                     for (String topic : topics) {
                         RenderEngine.addTopic(topic);
                     }
 
                     String lobbyMessagesAsString = mapMsg.getString("CONTENT");
-                    System.out.println("CONTENT - " + lobbyMessagesAsString);
+                    // System.out.println("CONTENT - " + lobbyMessagesAsString);
                     String[] lobbyMessages = lobbyMessagesAsString.split("\\|");
                     for (String message : lobbyMessages) {
                         RenderEngine.addMessage(message);

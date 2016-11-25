@@ -91,7 +91,9 @@ public enum MessageType {
 
     /**
      * TYPE       int
-     * CONTENT    String   "newName"
+     * CHATROOM   String   "lobby"
+     * CONTENT    String   "mensaje1|mensaje2|mensaje3"
+     * TOPIC      String   "topic1"
      */
     RES_USER_JOIN_ROOM,
 
