@@ -101,10 +101,25 @@ public class RenderEngine {
         topics.add(new TopicWithMessages(topic));
     }
 
+    public static void notifyMention(String topic) {
+        System.out.println("Se ha llamado a notifyMention con el topic " + topic);
+        for (TopicWithMessages internalTopic : topics) {
+            if (internalTopic.name.equals(topic)) {
+                internalTopic.messages = -1;
+                System.out.println("Ahora messages vale " + internalTopic.messages);
+                break;
+            }
+        }
+    }
+
     public static void notify(String topic) {
         System.out.println("Se ha llamado a notify con el topic " + topic);
         for (TopicWithMessages internalTopic : topics) {
             if (internalTopic.name.equals(topic)) {
+                if (internalTopic.messages == -1) {
+                    System.out.println("Permanece la mención");
+                    break;
+                }
                 internalTopic.messages = internalTopic.messages + 1;
                 System.out.println("Ahora messages vale " + internalTopic.messages);
                 break;
@@ -137,6 +152,9 @@ public class RenderEngine {
     private static String push(int i) {
         if (i == 0) {
             return " ";
+        }
+        if (i == -1) {
+            return "\u001B[31m@\u001B[0m";
         }
         if (i < 10) {
             return "\u001B[31m" + i + "\u001B[0m";

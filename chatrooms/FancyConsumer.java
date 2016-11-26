@@ -19,6 +19,7 @@ public class FancyConsumer implements javax.jms.MessageListener {
 
     private static final String RED = "\u001B[31m";
     private static final String RESET = "\u001B[0m";
+    private static final String YELLOW = "\u001B[33m";
 
     // cualquier objeto se puede utilizar como un mutex al usarlo en un bloque synchronized
     public static Object mutex = new Object();
@@ -78,7 +79,11 @@ public class FancyConsumer implements javax.jms.MessageListener {
             MapMessage mapMsg = (MapMessage) msg;
             if (mapMsg.getJMSDestination() instanceof Topic) {
                 if (mapMsg.getInt("TYPE") == MessageType.MSG_SIMPLE.ordinal() || mapMsg.getInt("TYPE") == MessageType.MSG_WITH_MENTIONS.ordinal()) {
-                    RenderEngine.addMessage(mapMsg.getString("CONTENT"));
+                    if (mapMsg.getString("USER").equals(RenderEngineTest.userHandle)) {
+                        RenderEngine.addMessage("[" + RED + mapMsg.getString("USER") + RESET + "] " + mapMsg.getString("CONTENT"));
+                    } else {
+                        RenderEngine.addMessage("[" + YELLOW + mapMsg.getString("USER") + RESET + "] " + mapMsg.getString("CONTENT"));
+                    }
                 }
             }
 
@@ -120,8 +125,13 @@ public class FancyConsumer implements javax.jms.MessageListener {
                     String lobbyMessagesAsString = mapMsg.getString("CONTENT");
                     // System.out.println("CONTENT - " + lobbyMessagesAsString);
                     String[] lobbyMessages = lobbyMessagesAsString.split("\\|");
-                    for (String message : lobbyMessages) {
-                        RenderEngine.addMessage(message);
+
+                    // TODO con la notación de Migui ahora tenemos el problema de que no enviamos
+                    //      el nombre del usuario: msg1|msg2|msg3
+
+                    // Si la vida te devuelve limones, habrá que hacer limonada.
+                    for (int i = lobbyMessages.length - 1; i >= 4; i--) {
+                        RenderEngine.addMessage(lobbyMessages[i]);
                     }
                 }
 
@@ -131,6 +141,16 @@ public class FancyConsumer implements javax.jms.MessageListener {
                             RenderEngine.getTopics().get(i).name = mapMsg.getString("NEW");
                             break;
                         }
+                    }
+                }
+
+                if (mapMsg.getInt("TYPE") == MessageType.RES_NEW_MENTION.ordinal()) {
+                    String chatroom = mapMsg.getString("CHATROOM");
+                    // Si la notificación se refiere a la sala en la que estás, no hagas nada.
+                    if (chatroom.equals(RenderEngineTest.userChatroom)) {
+                        return;
+                    } else {
+                        RenderEngine.notifyMention(chatroom);
                     }
                 }
 

@@ -96,7 +96,7 @@ public class RenderEngineTest {
                     // (MSG_WITH_MENTIONS) y envíalo por el topic correspondiente.
                     MapMessage message = FancyConsumer.session.createMapMessage();
                     message.setInt("TYPE", MessageType.MSG_WITH_MENTIONS.ordinal());
-                    message.setString("CONTENT", msgPrefix + input);
+                    message.setString("CONTENT", input);
                     message.setString("MENTIONS", mentions);
                     message.setString("USER", userHandle);
                     message.setString("CHATROOM", userChatroom);
@@ -107,7 +107,7 @@ public class RenderEngineTest {
                     // mensaje normal (MSG_SIMPLE) y envíalo por el topic correspondiente.
                     MapMessage message = FancyConsumer.session.createMapMessage();
                     message.setInt("TYPE", MessageType.MSG_SIMPLE.ordinal());
-                    message.setString("CONTENT", msgPrefix + input);
+                    message.setString("CONTENT", input);
                     message.setString("USER", userHandle);
                     message.setString("CHATROOM", userChatroom);
                     FancyConsumer.topicProducer.send(message);
