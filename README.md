@@ -7,17 +7,18 @@
 * Ruiz Calle, Javier
 
 ## Tabla de contenidos
-1. [Arquitectura de comunicación](#Arquitectura-de-comunicación)
-  11. [Elementos de la arquitectura](#Elementos-de-la-arquitectura)
-  12. [Métodos de comunicación](#Métodos-de-comunicación)
+1. [Arquitectura de comunicación](#arquitectura-de-comunicacion)
+  11. [Elementos de la arquitectura](#elementos-de-la-arquitectura)
+  12. [Métodos de comunicación](#metodos-de-comunicacion)
 2. [Despliegue remoto del entorno](#despliegue-remoto-del-entorno)
-3. [Interfaz de texto](#Interfaz-de-texto)
-4. [Interfaz gráfica](#Interfaz-gráfica)
-5. [Base de datos](#Base-de-datos)
-  51. [Modelo E/R](#Modelo-E/R)
-  52. [Operaciones y consultas](#Operaciones-y-consultas)
-  53. [Aspectos de seguridad](#Aspectos-de-seguridad)
+3. [Interfaz de texto](#interfaz-de-texto)
+4. [Interfaz gráfica](#interfaz-grafica)
+5. [Base de datos](#base-de-datos)
+  51. [Modelo E/R](#modelo-E/R)
+  52. [Operaciones y consultas](#operaciones-y-consultas)
+  53. [Aspectos de seguridad](#aspectos-de-seguridad)
 
+<a name="arquitectura-de-comunicacion"/>
 ## Arquitectura de comunicación
 
 Para poder realizar un buen desarrollo de la práctica, hemos establecido cuál va a ser la arquitectura de comunicación que van a seguir los mensajes que haya en nuestro sistema.
@@ -28,6 +29,7 @@ En la siguiente imagen se puede ver un esquema simple de la arquitectura a usar.
 
 La arquitectura de comunicación se puede analizar desde dos perspectivas: La partes que la componen y los métodos de comunicación usados.
 
+<a name="elementos-de-la-arquitectura"/>
 ### Elementos de la arquitectura
 
 La aquitectura de comunicación se divide en dos parte: _Sibyl_ y los usuarios que estan usando la aplicación.
@@ -47,6 +49,7 @@ _Sibyl_ esta compuesto de cinco partes:
 
 Los usuarios son aquellas personas que interactuan con el sistema de chat desarrollado, según desde donde se conecte el usuario, intefaz de terminal o gráfica, el modo de interacción es diferente. El modo de funcionamiento de cada interfaz se explicará posteriormente.
 
+<a name="metodos-de-comunicacion"/>
 ### Métodos de Comunicación
 
 Desde la perspectiva de métodos de comunicación, se puede dividir el esquema en dos partes: La comunicación mediante topics y la comunicación mediante queues.
@@ -80,27 +83,37 @@ lanzar más contenedores y controlar los recursos que consumen.
 
 ![Despliegue de imqbroker en GKE](http://i.imgur.com/VRfFBbi.png)
 
+<a name="interfaz-de-texto"/>
 ## Interfaz de texto
 
 La interfaz de texto renderiza los componentes de la aplicación mediante una máquina de estados. Gestiona las interrupciones referidas a los mensajes entrantes y gestiona los recursos compartidos mediante controles de concurrencia.
 
 En esta interfaz se muestra la lista de _chatrooms_ disponibles en el sistema, a la derecha los mensajes que hay en el _chatroom_ seleccionado y en la parte inferior de la terminal se encuenta un _prompt_ ( **_>_** ) en el que el usuario podrá realizar las operaciones de envío de mensajes y ejecución de comandos.
 
-<!--
-En la siguiente imagen se puede ver la apariencia de la interfaz de terminal.
+En la siguiente imagen se puede ver la apariencia de la interfaz de texto.
 
-![alt text](screenshots/example-terminal.png "Terminal Interface")
--->
+![alt text](http://i.imgur.com/gkgidQ3.jpg "Terminal Interface")
 
+
+<a name="interfaz-grafica"/>
 ## Interfaz gráfica
 
-<!--
-![alt text]("Graphic Interface")
--->
+La interfaz gráfica esta realizada con _Java Swing_. Esta interfaz esta dividida en dos ventanas, una ventana inicial para el login y otra ventana para el panel de _chatrooms_.
 
+El panel de _chatrooms_ esta compuesto de cinco partes: en la parte superior están los botones de acciones (_Join Room_, _Settings_ y _Leave Room_), a la izquierda se muestra el listado de todas las _chatrooms_ que hay disponibles en el sistema, en la parte central se mostrarán los mensajes de la _chatroom_ actual, a la derecha se mostrarán los usuarios que estan dentro de la _chatroom_ actual (falta por implementar) y en la parte inferior se encuentra la caja de texto para enviar mensajes a la _chatroom_ actual.
+
+Como elemento adicional, esta interfaz tiene opción bilingüe en inglés y en español.
+
+En las siguientes imagenes se puede ver la apariencia de la interfaz gráfica, tanto del login como el panel de _chatrooms_.
+
+![alt text](http://i.imgur.com/cQEczwo.png "Graphic Interface")
+![alt text](http://i.imgur.com/c81tIum.png "Graphic Interface")
+
+<a name="base-de-datos"/>
 ## Base de datos
 Para el desarrollo de esta práctica, hemos decidido implementar una base de datos para tener una persistencia de toda la información que estemos manejando, mientras el sistema de chatrooms esté en funcionamiento.
 
+<a name="modelo-E/R"/>
 ### Modelo E/R
 El modelo de la base de datos esta compuesto de tres entidades y tres relaciones. Las entidades representan a los usuarios, las chatrooms y los mensajes entre usuarios mediante las chatrooms.
 
@@ -108,6 +121,7 @@ En la siguiente imagen se puede ver el modelo entidad/relación que define a la 
 
 ![alt text](http://i.imgur.com/TQ6eLPB.png "Database Schema")
 
+<a name="operaciones-y-consultas"/>
 ### Operaciones y consultas
 Las operaciones y cunsultas que se le pueden realizar a la base de datos son las siguientes:
 
@@ -119,6 +133,7 @@ Las operaciones y cunsultas que se le pueden realizar a la base de datos son las
 
 * Las consultas que se pueden realizar sobre los **_mensajes_** son las siguientes: Obtener todos los mensajes, a partir de un usuario o una chatroom, obtener los mensajes con menciones con varios filtros entre otras queries.
 
+<a name="aspectos-de-seguridad"/>
 ### Aspectos de seguridad
 Al haber decido tener una persistencia de la información que va a utilizar nuestro sistema de chat, hay que llevar a cabo una serie de medidas de seguridad para garantizar el correcto funcionamiento de nuestro sistema.
 
