@@ -78,7 +78,7 @@ public class SibylQueueManager implements javax.jms.MessageListener {
         }
     }
 
-    private String printError (String messageType) {
+    private String printError(String messageType) {
         String result = "[" + messageType + "] " + RED + "Mensaje deforme" + RESET;
         return result;
     }
@@ -93,6 +93,7 @@ public class SibylQueueManager implements javax.jms.MessageListener {
             if (!BotLogic.login(user_login)) {
                 toSend.setInt("TYPE", Types.RES_LOGIN.ordinal());
                 toSend.setBoolean("STATUS", false);
+                // printMap();
                 Launcher.map.get(user_login.getHandle()).getSibylProducerM().send(toSend);
             } else {
                 toSend.setInt("TYPE", Types.RES_LOGIN.ordinal());
@@ -105,7 +106,13 @@ public class SibylQueueManager implements javax.jms.MessageListener {
                 chatrooms += chatrooms_array[chatrooms_array.length - 1].getName();
                 toSend.setString("TOPICS", chatrooms);
                 toSend.setString("CONTENT", RES_LAST_MESSAGES(chatrooms_array[0].getName()));
-                // TODO: HACER TODA LA CHATROOM CONNECTION ENTERO
+                //TODO: INSERTAR USUARIO EN EL MAPA CON LAS USER CONNECTION
+                if (Launcher.map.get(user_login.getHandle()) == null) {
+                    chatroomConnectionCreation(user_login.getHandle());
+                }
+                // printMap();
+                //
+                // System.out.println("TOPICS: " + toSend.getString("TOPICS") + "\n\tCONTENT: " + toSend.getString("CONTENT"));
                 Launcher.map.get(user_login.getHandle()).getSibylProducerM().send(toSend);
             }
         } catch (JMSException e) {
@@ -113,26 +120,57 @@ public class SibylQueueManager implements javax.jms.MessageListener {
         }
     }
 
+    private void printMap () {
+        for (String each: Launcher.map.keySet()) {
+            System.out.println("[USER]: " + Launcher.map.get(each).getHandle());
+        }
+    }
+
+    private void chatroomConnectionCreation(String name) {
+        UserConnection userConnection = new UserConnection();
+        try {
+            Queue sibylQueueReq = Launcher.subSession.createQueue("sibylreq" + name);
+            Queue sibylQueueRes = Launcher.subSession.createQueue("sibylres" + name);
+
+            MessageConsumer consumer = Launcher.subSession.createConsumer(sibylQueueReq);
+            MessageProducer producer = Launcher.subSession.createProducer(sibylQueueRes);
+
+            userConnection.setHandle(name);
+            userConnection.setSibylConsumerM(consumer);
+            userConnection.setSibylProducerM(producer);
+            userConnection.setSibylReqQ(sibylQueueReq);
+            userConnection.setSibylResQ(sibylQueueRes);
+            consumer.setMessageListener(new SibylQueueManager());
+            Launcher.map.put(name, userConnection);
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void REQ_USER_JOIN_ROOM(String handle, String name) {
         User user = new User();
         user.setHandle(handle);
         Chatroom chatroom = new Chatroom();
         chatroom.setName(name);
-        // BotLogic.join(user, chatroom);
+        BotLogic.join(user, chatroom);
 
         try {
             MapMessage toSend = Launcher.subSession.createMapMessage();
+            String content = RES_LAST_MESSAGES(chatroom.getName());
             toSend.setInt("TYPE", Types.RES_USER_JOIN_ROOM.ordinal());
-            toSend.setString("CONTENT", RES_LAST_MESSAGES(chatroom.getName()));
+            toSend.setString("CONTENT", content);
             toSend.setString("TOPIC", Launcher.topicMap.get(name).getTopic().getTopicName());
+            toSend.setString("CHATROOM", name);
+            System.out.println("[CONTENT]: " + toSend.getString("CONTENT") + " [CHATROOM]: " + toSend.getString("CHATROOM"));
             Launcher.map.get(user.getHandle()).getSibylProducerM().send(toSend);
 
             MessageProducer msgProducer = Launcher.topicMap.get(name).getTopicProducer();
             MapMessage toTopic = Launcher.subSession.createMapMessage();
             toTopic.setInt("TYPE", Types.MSG_SIMPLE.ordinal());
             toTopic.setString("CHATROOM", name);
-            toTopic.setString("CONTENT", "[\u001B[34msibylbot\u001B[0m] Un nuevo usuario " + user.getHandle() + " ha entrado en esta sala.");
-            toTopic.setString("USER", user.getHandle());
+            toTopic.setString("CONTENT", "El usuario " + user.getHandle() + " ha entrado en la sala.");
+            toTopic.setString("USER", "sibylbot");
             msgProducer.send(toTopic);
         } catch (JMSException e) {
             e.printStackTrace();
@@ -147,13 +185,13 @@ public class SibylQueueManager implements javax.jms.MessageListener {
         chatroom.setName(name);
         BotLogic.leave(user, chatroom);
 
-        chatroom.setName(lobbyName);
-        BotLogic.join(user, chatroom);
-        REQ_USER_JOIN_ROOM(handle, name);
+        // chatroom.setName(lobbyName);
+
+        // REQ_USER_JOIN_ROOM(handle, name);
         try {
             MapMessage toSend = Launcher.subSession.createMapMessage();
             toSend.setInt("TYPE", Types.RES_USER_LEAVE_ROOM.ordinal());
-            toSend.setString("CONTENT", RES_LAST_MESSAGES(lobbyName));
+            toSend.setBoolean("STATUS", true);
             Launcher.map.get(handle).getSibylProducerM().send(toSend);
         } catch (JMSException e) {
             e.printStackTrace();
@@ -198,13 +236,19 @@ public class SibylQueueManager implements javax.jms.MessageListener {
     private void REQ_USER_CHANGE_PASSWORD(String handle, String passwd) {
         User user = new User();
         user.setHandle(handle);
-        BotLogic.changePasswd(user, passwd);
 
         try {
-            MapMessage toSend = Launcher.subSession.createMapMessage();
-            toSend.setInt("TYPE", Types.RES_USER_CHANGE_PASSWORD.ordinal());
-            toSend.setBoolean("STATUS", true);
-            Launcher.map.get(handle).getSibylProducerM().send(toSend);
+            if (BotLogic.changePasswd(user, passwd)) {
+                MapMessage toSend = Launcher.subSession.createMapMessage();
+                toSend.setInt("TYPE", Types.RES_USER_CHANGE_PASSWORD.ordinal());
+                toSend.setBoolean("STATUS", true);
+                Launcher.map.get(handle).getSibylProducerM().send(toSend);
+            } else {
+                MapMessage toSend = Launcher.subSession.createMapMessage();
+                toSend.setInt("TYPE", Types.RES_USER_CHANGE_PASSWORD.ordinal());
+                toSend.setBoolean("STATUS", false);
+                Launcher.map.get(handle).getSibylProducerM().send(toSend);
+            }
         } catch (JMSException e) {
             e.printStackTrace();
         }
@@ -263,6 +307,7 @@ public class SibylQueueManager implements javax.jms.MessageListener {
         for (int i = 0; i < arrayMessages.length - 1; i++) {
             result += arrayMessages[i].getText() + "|";
         }
+        System.out.println("LEEEEENGTH: " + arrayMessages.length);
         result += result + arrayMessages[arrayMessages.length - 1].getText();
         return result;
     }

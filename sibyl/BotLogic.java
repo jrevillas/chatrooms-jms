@@ -12,6 +12,11 @@ public class BotLogic {
 
     public static void join(User user, Chatroom chatroom) {
         // Llamamos a insertSubscription para la database
+        User[] users = Database.getsubscriptionFromChatroom(chatroom);
+        for (User each : users) {
+            if (each.getHandle().equals(user.getHandle()))
+                return;
+        }
         Database.insertSubscription(user, chatroom);
     }
 
@@ -25,16 +30,17 @@ public class BotLogic {
         Database.insertChatroom(user, chatroom);
     }
 
-    public static void changePasswd(User handle, String newPasswd) {
+    public static boolean changePasswd(User handle, String newPasswd) {
         // Primero llamamos a getUser para tener el objeto usuario entero
         User user = Database.getUser(handle);
 
         // Asumimos que el usuario está perfectamente logeado
-        user.setPassword(BCrypt.hashpw(newPasswd, BCrypt.gensalt(10)));
-
-        // Suponemos que desde el momento que se pulsa enter, la contraseña se cifra,
-        // Es decir, que a este punto, la contraseña nos llega ya cifrada
-        Database.updatePassword(user);
+        if (BCrypt.checkpw(newPasswd, user.getPassword())) {
+            user.setPassword(BCrypt.hashpw(newPasswd, BCrypt.gensalt(10)));
+            Database.updatePassword(user);
+            return true;
+        }
+        return false;
     }
 
     public static void changeChatroomName(Chatroom chatroom, String newName) {
@@ -66,7 +72,7 @@ public class BotLogic {
 
         if (user_db == null) {
             Database.insertUser(user_login);
-            System.out.println("Usuario creado con: " + user_db.getHandle());
+            System.out.println("Usuario creado con: " + user_login.getHandle());
             // también le ponemos que esté subscrito al topic lobby
             Chatroom chatroom = new Chatroom();
             chatroom.setId(1);

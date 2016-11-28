@@ -98,7 +98,7 @@ public enum Types {
 
     /**
      * TYPE       int
-     * CONTENT    String   "last messages"
+     * STATUS     boolean  true/false
      */
     RES_USER_LEAVE_ROOM,
 

@@ -17,7 +17,7 @@ public class Launcher implements javax.jms.MessageListener {
     private static ConnectionFactory myConnFactory;
     private static Connection myConn;
     public static Session subSession;
-    private static Queue sibylQueue;
+    //private static Queue sibylQueue;
 
     private static final String RED = "\u001B[31m";
     private static final String RESET = "\u001B[0m";
@@ -95,7 +95,8 @@ public class Launcher implements javax.jms.MessageListener {
     public void onMessage(Message msg) {
         try {
             MapMessage message = (MapMessage) msg;
-            System.out.println("USER: "+ message.getString("USER") + " \n\tand CONTENT: " + message.getString("CONTENT"));
+            System.out.println("USER: " + message.getString("USER") + " \n\tand CONTENT: " + message.getString("CONTENT") +
+                    "\n\tfrom CHATROOM: " + message.getString("CHATROOM"));
             int type = message.getInt("TYPE");
             switch (Types.values()[type]) {
                 case MSG_SIMPLE:
@@ -128,7 +129,6 @@ public class Launcher implements javax.jms.MessageListener {
         return result;
     }
 
-
     private void MSG_SIMPLE(String msgContent, String handle, String name) {
         StdMessage stdMessage = new StdMessage();
         stdMessage.setText(msgContent);
@@ -138,7 +138,7 @@ public class Launcher implements javax.jms.MessageListener {
         chatroom.setName(name);
         BotLogic.insertMessage(stdMessage, user, chatroom);
 
-        // TODO: Notificar al usuario de que se ha hablado por la sala x
+        // TODO: Notificar a todos los usuarios que estén subscritos a ese topic por sus colas
         try {
             MapMessage message = subSession.createMapMessage();
             message.setInt("TYPE", Types.RES_NEW_MESSAGE.ordinal());
@@ -157,13 +157,17 @@ public class Launcher implements javax.jms.MessageListener {
         Chatroom chatroom = new Chatroom();
         chatroom.setName(name);
         BotLogic.insertMessageMentions(msgMentions, stdMessage, user, chatroom);
+        String[] mentions = msgMentions.split(",");
 
-        // TODO: Notificar al usuario de que se le ha mencionado
         try {
             MapMessage message = Launcher.subSession.createMapMessage();
             message.setInt("TYPE", Types.RES_NEW_MENTION.ordinal());
             message.setString("CHATROOM", chatroom.getName());
-            sendMessages(chatroom, message);
+            for (String mention: mentions) {
+                System.out.println("Sending to: " + mention + " from chatroom: " + message.getString("CHATROOM"));
+                map.get(mention).getSibylProducerM().send(message);
+            }
+
         } catch (JMSException e) {
             e.printStackTrace();
         }
