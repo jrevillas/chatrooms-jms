@@ -39,8 +39,8 @@ public class SlashInterpreter {
             MapMessage message = FancyConsumer.session.createMapMessage();
             message.setInt("TYPE", 0);
             message.setString("CONTENT", "[" + PURPLE + "slash" + RESET + "] I hear you sister!");
-            message.setString("USER", "slash");
-            message.setString("CHATROOM", "lobby");
+            message.setString("USER", RenderEngineTest.userHandle);
+            message.setString("CHATROOM", RenderEngineTest.userChatroom);
             FancyConsumer.topicProducer.send(message);
         }
         if (args[0].equals("/rename")) {
@@ -80,9 +80,9 @@ public class SlashInterpreter {
             MapMessage msg = FancyConsumer.session.createMapMessage();
             for (String str : love) {
                 msg.setInt("TYPE", MessageType.MSG_SIMPLE.ordinal());
-                msg.setString("CONTENT", msgPrefix + str);
-                msg.setString("CHATROOM", "lobby");
-                msg.setString("USER", "Revillas");
+                msg.setString("CONTENT", str);
+                msg.setString("CHATROOM", RenderEngineTest.userChatroom);
+                msg.setString("USER", RenderEngineTest.userHandle);
                 FancyConsumer.topicProducer.send(msg);
             }
         }

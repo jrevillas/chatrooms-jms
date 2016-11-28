@@ -86,13 +86,13 @@ lanzar más contenedores y controlar los recursos que consumen.
 <a name="interfaz-de-texto"/>
 ## Interfaz de texto
 
-La interfaz de texto renderiza los componentes de la aplicación mediante una máquina de estados. Gestiona las interrupciones referidas a los mensajes entrantes y gestiona los recursos compartidos mediante controles de concurrencia.
+La interfaz de texto renderiza los componentes de la aplicación mediante una máquina de estados, maneja las notificaciones referidas a los mensajes entrantes y gestiona los recursos compartidos (_stdout_) mediante controles de concurrencia.
 
 En esta interfaz se muestra la lista de _chatrooms_ disponibles en el sistema, a la derecha los mensajes que hay en el _chatroom_ seleccionado y en la parte inferior de la terminal se encuenta un _prompt_ ( **_>_** ) en el que el usuario podrá realizar las operaciones de envío de mensajes y ejecución de comandos.
 
 En la siguiente imagen se puede ver la apariencia de la interfaz de texto.
 
-![alt text](http://i.imgur.com/gkgidQ3.jpg "Terminal Interface")
+![alt text](http://i.imgur.com/0a6hcyj.png "Terminal Interface")
 
 
 <a name="interfaz-grafica"/>

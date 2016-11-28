@@ -17,6 +17,10 @@ import java.util.ArrayList;
  */
 public class FancyConsumer implements javax.jms.MessageListener {
 
+    private static final String CYAN = "\u001B[36m";
+    private static final String BLUE = "\u001B[34m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String PURPLE = "\u001B[35m";
     private static final String RED = "\u001B[31m";
     private static final String RESET = "\u001B[0m";
     private static final String YELLOW = "\u001B[33m";
@@ -35,6 +39,23 @@ public class FancyConsumer implements javax.jms.MessageListener {
     private static MessageConsumer topicConsumer;
     public static MessageProducer topicProducer;
     private static Topic topic;
+
+    public static String color(String username) {
+        switch (username) {
+            case "Revillas":
+                return "[@" + RED + "jrevillas" + RESET + "] ";
+            case "Clara":
+                return "[@" + BLUE + "csanchez" + RESET + "] ";
+            case "jruiz":
+                return "[@" + YELLOW + "jruiz" + RESET + "] ";
+            case "migui":
+                return "[@" + CYAN + "mnunez" + RESET + "] ";
+            case "dmelero":
+                return "[@" + GREEN + "dmelero" + RESET + "] ";
+            default:
+                return "[@" + PURPLE + username + RESET + "] ";
+        }
+    }
 
     public FancyConsumer() {
         try {
@@ -79,11 +100,7 @@ public class FancyConsumer implements javax.jms.MessageListener {
             MapMessage mapMsg = (MapMessage) msg;
             if (mapMsg.getJMSDestination() instanceof Topic) {
                 if (mapMsg.getInt("TYPE") == MessageType.MSG_SIMPLE.ordinal() || mapMsg.getInt("TYPE") == MessageType.MSG_WITH_MENTIONS.ordinal()) {
-                    if (mapMsg.getString("USER").equals(RenderEngineTest.userHandle)) {
-                        RenderEngine.addMessage("[" + RED + mapMsg.getString("USER") + RESET + "] " + mapMsg.getString("CONTENT"));
-                    } else {
-                        RenderEngine.addMessage("[" + YELLOW + mapMsg.getString("USER") + RESET + "] " + mapMsg.getString("CONTENT"));
-                    }
+                    RenderEngine.addMessage(color(mapMsg.getString("USER")) + mapMsg.getString("CONTENT"));
                 }
             }
 
