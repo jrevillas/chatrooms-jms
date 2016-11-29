@@ -186,13 +186,18 @@
                     </constraints>
                     <properties>
                       <background color="-1"/>
+                      <maximumSize width="21" height="25"/>
                     </properties>
                     <border type="none"/>
                     <children>
                       <component id="959e1" class="javax.swing.JTable" binding="tableUsers">
                         <constraints/>
                         <properties>
+                          <autoResizeMode value="4"/>
+                          <autoscrolls value="true"/>
                           <background color="-1"/>
+                          <selectionBackground color="-1"/>
+                          <selectionForeground color="-16777216"/>
                           <showHorizontalLines value="false"/>
                           <showVerticalLines value="false"/>
                         </properties>

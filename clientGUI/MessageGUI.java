@@ -9,8 +9,9 @@ class MessageGUI {
     private String handle_user;
     private Date send_date;
     private String chatroom;
+    private String mentions;
 
-    MessageGUI(){
+    MessageGUI() {
         send_date = new Date();
     }
 
@@ -47,6 +48,11 @@ class MessageGUI {
 
     MessageGUI setChatroom(String chatroom) {
         this.chatroom = chatroom;
+        return this;
+    }
+
+    MessageGUI setMention(String mentions) {
+        this.mentions = mentions;
         return this;
     }
 }

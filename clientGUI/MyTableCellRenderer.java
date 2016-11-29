@@ -1,7 +1,6 @@
 package clientGUI;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.HashMap;
@@ -12,7 +11,7 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
     private HashMap<String, Color> colorMap;
     private boolean center;
 
-    public MyTableCellRenderer(int color, boolean center) {
+    MyTableCellRenderer(int color, boolean center) {
         this.color = color;
         if (color == 2)
             colorMap = new HashMap<> ();
@@ -33,7 +32,10 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
                 row, column);
         if (color == 3) {
-            if (0 == (int) table.getValueAt(row, column))
+            ChatroomGUI chat = (ChatroomGUI) ((GenericDomainTableModel) table.getModel()).getDomainObject(row);
+            if (chat.getMention())
+                this.setForeground(Color.RED);
+            else if (chat.getUnreadMessages() == 0)
                 this.setForeground(Color.WHITE);
             else
                 this.setForeground (Color.BLACK);
@@ -42,12 +44,7 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
             this.setForeground ( Color.GRAY );
         else if (color == 2) {
             String valor = (String) table.getValueAt ( row, column );
-            Color color = colorMap.get ( valor );
-            if (color == null) {
-                color = colorAleatorio ();
-                colorMap.put ( valor, color );
-            }
-            this.setForeground ( color );
+            this.setForeground ( colorMap.computeIfAbsent(valor, k -> colorAleatorio()) );
         }
 
         setBorder ( BorderFactory.createCompoundBorder ( getBorder (), BorderFactory.createEmptyBorder ( 0, 4, 0 ,0 ) ) );
@@ -67,7 +64,7 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
         final float hue = random.nextFloat ();
         final float saturation = 0.9f;//1.0 for brilliant, 0.0 for dull
         final float luminance = 1.0f; //1.0 for brighter, 0.0 for black
-        return Color.getHSBColor ( random.nextFloat (), 0.9f, 1.0f );
+        return Color.getHSBColor ( hue, saturation, luminance );
 //        return new Color( random.nextInt (0xFFFFFF));
     }
 }

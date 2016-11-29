@@ -16,7 +16,7 @@ public class DialogJoinRoom extends JDialog {
     private JPanel panelUp;
     private JPanel panelButtons;
     private JPanel panelDown;
-    private Chatroom chatroom;
+    private ChatroomGUI chatroom;
     private Language lan;
 
     DialogJoinRoom() {
@@ -54,7 +54,7 @@ public class DialogJoinRoom extends JDialog {
         else if (iconName.length () != 0 && getClass ().getResource ( "clientGUI/resources/" + iconName ) == null)
             JOptionPane.showMessageDialog(this, lan.getProperty("joiNoIcon"), "Error", JOptionPane.ERROR_MESSAGE);
         else if (textName.getText ().length () != 0 ) {
-            chatroom = new Chatroom();
+            chatroom = new ChatroomGUI();
             chatroom.setName(topicName);
             dispose ();
         }

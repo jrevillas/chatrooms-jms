@@ -1,7 +1,6 @@
 package clientGUI;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 
 class DialogSettings extends JDialog {
@@ -18,6 +17,7 @@ class DialogSettings extends JDialog {
     private JPanel panelGeneral;
     private int result;
     private Language lan;
+    private DialogLoading dialogLoading;
 
     int getResult() {
         return result;
@@ -25,10 +25,6 @@ class DialogSettings extends JDialog {
 
     String getPassword() {
         return String.valueOf(passwordField.getPassword());
-    }
-
-    String getHandler() {
-        return fieldHandler.getText();
     }
 
     DialogSettings() {
@@ -40,25 +36,30 @@ class DialogSettings extends JDialog {
         buttonLanguage.addActionListener(e -> {
             result = 1;
             setLanguage(comboBox1.getSelectedIndex());
+            dialogLoading = new DialogLoading();
         });
 
         buttonHandler.addActionListener(e -> {
-            result = 1;
+            result = 2;
+            dialogLoading = new DialogLoading();
         });
 
         buttonPassword.addActionListener(e -> {
             if (this.getPassword().length() > 0) {
-                result = 2;
+                DynamicProducerGUI.messageChangePassword(ChatGUI.user.getHandle(), this.getPassword());
+                dialogLoading = new DialogLoading();
             }
             JOptionPane.showMessageDialog(this, lan.getProperty("setPwdError"));
         });
 
         buttonLogout.addActionListener(e ->  {
             if (JOptionPane.showConfirmDialog(this, lan.getProperty("setLogConf")) == 0) {
-                result = 3;
-                dispose();
+                result = 2;
+                dialogLoading = new DialogLoading();
             }
         });
+
+        buttonExit.addActionListener(e -> dispose());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -79,9 +80,7 @@ class DialogSettings extends JDialog {
         buttonLanguage.setText(lan.getProperty("setButLan"));
         buttonHandler.setText(lan.getProperty("setButHand"));
         buttonPassword.setText(lan.getProperty("setButPwd"));
-        // TODO
-        //labelLog.setText(lan.getProperty("setLabLog") + " " + ChatGUI.user.getHandle());
-        labelLog.setText(lan.getProperty("setLabLog") + "mnunezdm");
+        labelLog.setText(lan.getProperty("setLabLog") + ChatGUI.user.getHandle());
         buttonLogout.setText(lan.getProperty("setButLog"));
         buttonExit.setText(lan.getProperty("exit"));
         comboBox1.removeAllItems();
@@ -90,23 +89,13 @@ class DialogSettings extends JDialog {
         comboBox1.setSelectedIndex(Language.index);
     }
 
-    public static void main(String[] args) {
-        DialogSettings dialog = new DialogSettings();
-        dialog.setMinimumSize(new Dimension(375, 200));
-        dialog.setResizable(false);
-        dialog.pack();
-        dialog.setVisible(true);
-        dialog.setLocationRelativeTo(null);
-
-        LoginDialog dialoG = new LoginDialog();
-        dialoG.setMinimumSize(new Dimension(300, 200));
-        dialoG.setLocationRelativeTo(null);
-        dialoG.setVisible(true);
-
-        DialogJoinRoom dialoJ = new DialogJoinRoom();
-        dialoJ.setMinimumSize(new Dimension(300, 200));
-        dialoJ.setLocationRelativeTo(null);
-        dialoJ.setVisible(true);
+    void result(boolean status) {
+        if (status){
+            dialogLoading.dispose();
+            JOptionPane.showMessageDialog(this, lan.getProperty("seChPwdOK"));
+        } else {
+            dialogLoading.dispose();
+            JOptionPane.showMessageDialog(this, lan.getProperty("seChPwdWr"));
+        }
     }
-
 }

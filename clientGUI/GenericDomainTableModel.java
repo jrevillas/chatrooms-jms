@@ -334,6 +334,10 @@ public abstract class GenericDomainTableModel<T> implements TableModel {
         return data.size ();
     }
 
+    public Object getDomainObject(String topic) {
+        return null;
+    }
+
     public void deleteRow(String topic){
 
     }

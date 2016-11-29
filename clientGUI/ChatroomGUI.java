@@ -6,15 +6,14 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sun.jmx.snmp.EnumRowStatus.active;
-
 class ChatroomGUI extends Chatroom {
     private ImageIcon icon;
     private int unreadMessages;
-    private boolean mention;
+    private boolean mention = false;
     private List<MessageGUI> messages;
+    private boolean subscription;
 
-    public ChatroomGUI() {
+    ChatroomGUI() {
         messages = new ArrayList<>();
     }
 
@@ -50,13 +49,29 @@ class ChatroomGUI extends Chatroom {
         return this.mention;
     }
 
-    void newMessage(MessageGUI message, boolean active) {
+    void newMessage(MessageGUI message) {
         messages.add(message);
-        if (!active)
-            this.unreadMessages++;
     }
 
     List<MessageGUI> getMessages() {
         return this.messages;
+    }
+
+    void eraseMessages() {
+        this.messages.clear();
+    }
+
+    void setSubscription(boolean subscription) {
+        this.subscription = subscription;
+    }
+
+    void newNotification(boolean mention) {
+        if (subscription)
+            unreadMessages++;
+        this.mention |= mention;
+    }
+
+    public void addMessage(MessageGUI message) {
+        messages.add(message);
     }
 }
