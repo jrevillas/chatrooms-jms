@@ -1,11 +1,5 @@
 # chatrooms-jms
 
-## Autores
-* Melero Chaves, Daniel
-* Núñez Díaz-Montes, Miguel
-* Revillas García, Javier
-* Ruiz Calle, Javier
-
 ## Tabla de contenidos
 1. [Arquitectura de comunicación](#arquitectura-de-comunicacion)
   11. [Elementos de la arquitectura](#elementos-de-la-arquitectura)
@@ -47,7 +41,7 @@ _Sibyl_ esta compuesto de cinco partes:
 
 #### Los usuarios
 
-Los usuarios son aquellas personas que interactuan con el sistema de chat desarrollado, según desde donde se conecte el usuario, intefaz de terminal o gráfica, el modo de interacción es diferente. El modo de funcionamiento de cada interfaz se explicará posteriormente.
+Los usuarios son aquellas personas que interactuan con el sistema de chat. Según desde donde se conecte el usuario (intefaz de texto o gráfica), el modo de interacción es diferente.
 
 <a name="metodos-de-comunicacion"/>
 ### Métodos de Comunicación
@@ -134,10 +128,7 @@ Las operaciones y cunsultas que se le pueden realizar a la base de datos son las
 * Las consultas que se pueden realizar sobre los **_mensajes_** son las siguientes: Obtener todos los mensajes, a partir de un usuario o una chatroom, obtener los mensajes con menciones con varios filtros entre otras queries.
 
 <a name="aspectos-de-seguridad"/>
-### Aspectos de seguridad
-Al haber decido tener una persistencia de la información que va a utilizar nuestro sistema de chat, hay que llevar a cabo una serie de medidas de seguridad para garantizar el correcto funcionamiento de nuestro sistema.
-
-#### Contraseñas
+#### Aspectos de seguridad
 Al tener información delicada de los usuarios almacenada en la base de datos, hemos decidido cifrar sus contraseñas.
 
 El método de cifrado que hemos decidido usar para cifrar las contraseñas es **_BCrypt_**. Este método de cifrado tiene implementada una clase en Java, que es la que vamos a usar para llevar a cabo nuestro objetivo.
@@ -145,25 +136,9 @@ El método de cifrado que hemos decidido usar para cifrar las contraseñas es **
 A continuación, se muestra un ejemplo de cómo se utiliza la clase **_BCrypt_** para el cifrado de contraseñas.
 
 ```java
-public static void insertUser(User user) {
 
-        //Generación de la operación/query
-        String query = "INSERT INTO `chatrooms`.`USER` (`handle`, `password`) ";
-        query += "VALUES (?,?)";
-
-        // Cifrado de la contraseña
+        // Cifrado previo al almacenamiento de la contraseña.
+        // BCRYPT_COST es el número de ciclos (coste), se utiliza el valor recomendado.
         String hash = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(BCRYPT_COST));
 
-        try {
-            PreparedStatement sentence = connection.prepareStatement(query);
-            // Comprobación de los parámetros de la operación/query
-            sentence.setString(1, user.getHandle());
-            sentence.setString(2, hash);
-            // Ejecución de la operación/query
-            sentence.execute();
-            sentence.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-}
 ```
