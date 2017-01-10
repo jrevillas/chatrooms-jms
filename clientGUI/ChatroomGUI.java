@@ -17,7 +17,7 @@ class ChatroomGUI extends Chatroom {
         messages = new ArrayList<>();
     }
 
-    void setIcon(String icon) {
+    private void setIcon(String icon) {
         this.icon = new ImageIcon(getClass().getResource("/clientGUI/resources/" + icon));
     }
 
@@ -71,7 +71,7 @@ class ChatroomGUI extends Chatroom {
         this.mention |= mention;
     }
 
-    public void addMessage(MessageGUI message) {
+    void addMessage(MessageGUI message) {
         messages.add(message);
     }
 }

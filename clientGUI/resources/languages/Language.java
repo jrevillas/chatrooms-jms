@@ -18,7 +18,7 @@ public class Language extends Properties {
 
     private void getProperties(String keyword) {
         try {
-            this.load(getClass().getResourceAsStream("resources/languages/" + keyword + ".properties"));
+            this.load(getClass().getResourceAsStream(keyword + ".properties"));
         } catch (IOException ignored) {
         }
     }

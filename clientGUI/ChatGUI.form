@@ -10,7 +10,7 @@
     </properties>
     <border type="none"/>
     <children>
-      <grid id="dd2be" binding="panelMenu" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="0">
+      <grid id="dd2be" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="0">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -50,7 +50,7 @@
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
         </constraints>
       </vspacer>
-      <splitpane id="7041e" binding="splitMessages">
+      <splitpane id="7041e">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <preferred-size width="200" height="200"/>
@@ -63,14 +63,14 @@
         </properties>
         <border type="none"/>
         <children>
-          <grid id="182e0" binding="panelChat" layout-manager="BorderLayout" hgap="5" vgap="0">
+          <grid id="182e0" layout-manager="BorderLayout" hgap="5" vgap="0">
             <constraints>
               <splitpane position="right"/>
             </constraints>
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="e339f" binding="panelInfoRoom" layout-manager="BorderLayout" hgap="0" vgap="0">
+              <grid id="e339f" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints border-constraint="North"/>
                 <properties/>
                 <border type="none"/>
@@ -101,7 +101,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="edf89" binding="panelSend" layout-manager="GridBagLayout">
+              <grid id="edf89" layout-manager="GridBagLayout">
                 <constraints border-constraint="South"/>
                 <properties/>
                 <border type="none"/>
@@ -134,7 +134,7 @@
                   </component>
                 </children>
               </grid>
-              <splitpane id="a9fe" binding="splitMessage">
+              <splitpane id="a9fe">
                 <constraints border-constraint="Center"/>
                 <properties>
                   <dividerLocation value="560"/>
@@ -146,7 +146,7 @@
                 </properties>
                 <border type="none"/>
                 <children>
-                  <scrollpane id="eecc4" binding="scrollMensajes">
+                  <scrollpane id="eecc4">
                     <constraints>
                       <splitpane position="left"/>
                     </constraints>
@@ -180,7 +180,7 @@
                       </component>
                     </children>
                   </scrollpane>
-                  <scrollpane id="82349" binding="scrollUsers">
+                  <scrollpane id="82349">
                     <constraints>
                       <splitpane position="right"/>
                     </constraints>
@@ -208,7 +208,7 @@
               </splitpane>
             </children>
           </grid>
-          <scrollpane id="7d046" binding="scrollRooms">
+          <scrollpane id="7d046">
             <constraints>
               <splitpane position="left"/>
             </constraints>

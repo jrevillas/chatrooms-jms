@@ -1,8 +1,5 @@
 package clientGUI;
 
-/**
- * Created by migui on 10/01/17.
- */
 import clientGUI.resources.languages.Language;
 
 import javax.swing.*;
@@ -14,7 +11,6 @@ class PanelLogin extends JPanel {
     private JButton buttonLogIn;
     private JTextField textHandle;
     private JPasswordField textPassword;
-    private JPanel panelCenter;
     private ChatGUI chatGUI;
 
     PanelLogin() {
@@ -22,7 +18,7 @@ class PanelLogin extends JPanel {
         this.setLayout(new BorderLayout());
 
         // CENTER
-        panelCenter = new JPanel(new GridLayout(4, 1));
+        JPanel panelCenter = new JPanel(new GridLayout(4, 1));
         panelCenter.setBorder(new EmptyBorder(5, 20, 15, 20));
 
         JLabel labelHandle = new JLabel("Handle");

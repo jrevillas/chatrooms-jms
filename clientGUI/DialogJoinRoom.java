@@ -1,5 +1,6 @@
 package clientGUI;
 
+import clientGUI.resources.languages.Language;
 import database.Chatroom;
 
 import javax.swing.*;

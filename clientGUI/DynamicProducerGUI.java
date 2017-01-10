@@ -1,8 +1,6 @@
-
 package clientGUI;
 
 import chatrooms.MessageType;
-
 import javax.jms.*;
 
 class DynamicProducerGUI {
@@ -10,34 +8,44 @@ class DynamicProducerGUI {
     private static MessageProducer topicProducer;
     private static MessageProducer sibylProducer;
 
+    // CONFIGURATION METHODS
     static void setProducer(String handler) {
         try {
-            session = ChatGUI.session;
-            Queue sibylQueue = ChatGUI.session.createQueue("sibylreq" + handler);
-            sibylProducer = ChatGUI.session.createProducer(sibylQueue);
+            sibylProducer = session.createProducer(session.createQueue("sibylreq" + handler));
         } catch (JMSException e) {
             e.printStackTrace();
         }
-    }
+       }
 
     static void changeRoom(String chatroom) {
         try {
             if (topicProducer != null)
                 topicProducer.close();
-            Topic topic = ChatGUI.session.createTopic(chatroom);
-            topicProducer = ChatGUI.session.createProducer(topic);
+            Topic topic = session.createTopic(chatroom);
+            topicProducer = session.createProducer(topic);
         } catch (JMSException e) {
             e.printStackTrace();
         }
     }
 
+    static void setSession(Session session) {
+        DynamicProducerGUI.session = session;
+    }
+
+    // SEND MESSAGE METHODS
     static boolean messageLogin(String user, String password) {
         try {
+            if (topicProducer != null)
+                topicProducer.close();
+            if (sibylProducer != null)
+                sibylProducer.close();
+            MessageProducer loginProducer = session.createProducer
+                    (session.createQueue("login"));
             MapMessage mapMessage = session.createMapMessage();
             mapMessage.setInt("TYPE", MessageType.REQ_LOGIN.ordinal());
             mapMessage.setString("USER", user);
             mapMessage.setString("PASSWORD", password);
-            sibylProducer.send(mapMessage);
+            loginProducer.send(mapMessage);
             return true;
         } catch (JMSException e) {
             return false;

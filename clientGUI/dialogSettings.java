@@ -1,11 +1,12 @@
 package clientGUI;
 
+import clientGUI.resources.languages.Language;
+
 import javax.swing.*;
 import java.awt.event.*;
 
 class DialogSettings extends JDialog {
     private JPanel contentPane;
-    private JTextField fieldHandler;
     private JButton buttonHandler;
     private JButton buttonPassword;
     private JButton buttonLogout;

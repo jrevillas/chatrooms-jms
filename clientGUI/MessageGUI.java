@@ -51,6 +51,10 @@ class MessageGUI {
         return this;
     }
 
+    String getMentions(){
+        return mentions;
+    }
+
     MessageGUI setMention(String mentions) {
         this.mentions = mentions;
         return this;

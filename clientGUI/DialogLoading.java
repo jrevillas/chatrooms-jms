@@ -2,9 +2,6 @@ package clientGUI;
 
 import javax.swing.*;
 
-/**
- * Created by migui on 22/11/2016.
- */
 class DialogLoading extends JDialog{
     DialogLoading() {
         ImageIcon icon = new ImageIcon(this.getClass().getResource("resources/loading.gif"));
@@ -14,5 +11,6 @@ class DialogLoading extends JDialog{
         this.setUndecorated(true);
         this.add(contentPane);
         this.pack();
+        this.setVisible(true);
     }
 }

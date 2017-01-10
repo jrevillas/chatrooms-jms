@@ -1,5 +1,6 @@
 package clientGUI;
 
+import clientGUI.resources.languages.Language;
 import database.User;
 
 import javax.swing.*;
@@ -14,9 +15,7 @@ public class LoginDialog extends JDialog {
     private JLabel labelUsername;
     private JLabel labelPassword;
     private JLabel labelInfo;
-    private User user;
-    private boolean closed = false;
-    Language lan;
+    private Language lan;
 
     public LoginDialog() {
         lan = new Language();
@@ -37,7 +36,6 @@ public class LoginDialog extends JDialog {
     }
 
     private void onCancel() {
-        closed = true;
         dispose();
     }
 
