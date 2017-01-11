@@ -36,6 +36,9 @@ public class FancyConsumer implements javax.jms.MessageListener {
     private static Queue sibylRequests;
     private static Queue sibylResponses;
 
+    public static Queue loginRequests;
+    public static MessageProducer loginProducer;
+
     private static MessageConsumer topicConsumer;
     public static MessageProducer topicProducer;
     private static Topic topic;
@@ -68,6 +71,9 @@ public class FancyConsumer implements javax.jms.MessageListener {
 
             // CREATE_QUEUE(sibylresRevillas)
             sibylResponses = session.createQueue("sibylres" + RenderEngineTest.userHandle);
+
+            loginRequests = session.createQueue("login");
+            loginProducer = session.createProducer(loginRequests);
 
             // CREATE_PRODUCER(sibylreqRevillas)
             sibylProducer = session.createProducer(sibylRequests);
@@ -140,15 +146,15 @@ public class FancyConsumer implements javax.jms.MessageListener {
                     RenderEngine.setMessages(new ArrayList<String>());
 
                     String lobbyMessagesAsString = mapMsg.getString("CONTENT");
-                    // System.out.println("CONTENT - " + lobbyMessagesAsString);
+                    System.out.println("CONTENT - " + lobbyMessagesAsString);
                     String[] lobbyMessages = lobbyMessagesAsString.split("\\|");
 
                     // TODO con la notación de Migui ahora tenemos el problema de que no enviamos
                     //      el nombre del usuario: msg1|msg2|msg3
 
                     // Si la vida te devuelve limones, habrá que hacer limonada.
-                    for (int i = lobbyMessages.length - 1; i >= 4; i--) {
-                        RenderEngine.addMessage(lobbyMessages[i]);
+                    for (String message : lobbyMessages) {
+                        RenderEngine.addMessage(message);
                     }
                 }
 
@@ -183,7 +189,7 @@ public class FancyConsumer implements javax.jms.MessageListener {
                     }
 
                     String lobbyMessagesAsString = mapMsg.getString("CONTENT");
-                    // System.out.println("CONTENT - " + lobbyMessagesAsString);
+                    System.out.println("CONTENT - " + lobbyMessagesAsString);
                     String[] lobbyMessages = lobbyMessagesAsString.split("\\|");
                     for (String message : lobbyMessages) {
                         RenderEngine.addMessage(message);

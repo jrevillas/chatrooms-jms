@@ -65,7 +65,7 @@ public class RenderEngineTest {
         message.setInt("TYPE", MessageType.REQ_LOGIN.ordinal());
         message.setString("PASSWORD", args[1]);
         message.setString("USER", args[0]);
-        FancyConsumer.sibylProducer.send(message);
+        FancyConsumer.loginProducer.send(message);
 
         while (true) {
             scan();
