@@ -90,7 +90,7 @@ public class Database {
             sentence.execute();
             sentence.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            ;
         }
     }
 
@@ -337,6 +337,8 @@ public class Database {
             sentence.setString(1, chatroom.getName());
             ResultSet rs = sentence.executeQuery();
 
+            if (!rs.isBeforeFirst())
+                return null;
             rs.next();
 
             Chatroom result = new Chatroom()
@@ -498,7 +500,7 @@ public class Database {
         query += "FROM chatrooms.CHATROOM c, chatrooms.MESSAGE m ";
         query += "WHERE c.name = m.name_chatroom ";
         query += "AND c.name = ? ";
-        query += "ORDER BY m.id ASC ";
+        query += "ORDER BY m.id DESC ";
         // TODO: Cambiar a 20 cuando no de problemas
         query += "LIMIT 5";
 
@@ -787,11 +789,11 @@ public class Database {
             PreparedStatement sentence = connection.prepareStatement(query);
             sentence.setString(1, user.getHandle());
             ResultSet rs = sentence.executeQuery();
-
+            if (!rs.isBeforeFirst()) {
+                return null;
+            }
             rs.next();
-
-            User result = new User()
-                    .setHandle(rs.getString("handle"))
+            User result = new User().setHandle(rs.getString("handle"))
                     .setPassword(rs.getString("password"))
                     .setLast_conexion(rs.getTimestamp("last_conexion"))
                     .setCurrent_topic(rs.getString("current_topic"))
@@ -799,6 +801,7 @@ public class Database {
 
             sentence.close();
             rs.close();
+
 
             return result;
         } catch (SQLException e) {
@@ -909,7 +912,7 @@ public class Database {
 
         try {
             PreparedStatement sentence = connection.prepareStatement(query);
-            sentence.setString(1, chatroom.getName());
+            sentence.setInt(1, chatroom.getId());
             ResultSet rs = sentence.executeQuery();
 
             // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html#last()

@@ -80,6 +80,7 @@ public enum Types {
     /**
      * TYPE       int
      * CHATROOM   String   "jruiz"
+     * STATUS     Boolean
      */
     RES_ROOM_CREATE,
 

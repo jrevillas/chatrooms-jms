@@ -17,17 +17,24 @@ public class BotLogic {
             if (each.getHandle().equals(user.getHandle()))
                 return;
         }
+        int id = Database.getChatroomId(chatroom.getName());
+        chatroom.setId(id);
         Database.insertSubscription(user, chatroom);
     }
 
     public static void leave(User user, Chatroom chatroom) {
         // Llamamos a deleteSuscription para la database
+        chatroom.setId(Database.getChatroomId(chatroom.getName()));
         Database.deleteSubscription(user, chatroom);
     }
 
-    public static void create(User user, Chatroom chatroom) {
+    public static boolean create(User user, Chatroom chatroom) {
         // Llamamos a insertChatroom para la database
-        Database.insertChatroom(user, chatroom);
+        if (Database.getChatroomByName(chatroom) == null) {
+            Database.insertChatroom(user, chatroom);
+            return true;
+        }
+        return false;
     }
 
     public static boolean changePasswd(User handle, String newPasswd) {
@@ -35,12 +42,9 @@ public class BotLogic {
         User user = Database.getUser(handle);
 
         // Asumimos que el usuario está perfectamente logeado
-        if (BCrypt.checkpw(newPasswd, user.getPassword())) {
-            user.setPassword(BCrypt.hashpw(newPasswd, BCrypt.gensalt(10)));
-            Database.updatePassword(user);
-            return true;
-        }
-        return false;
+        user.setPassword(BCrypt.hashpw(newPasswd, BCrypt.gensalt(10)));
+        Database.updatePassword(user);
+        return true;
     }
 
     public static void changeChatroomName(Chatroom chatroom, String newName) {
@@ -66,14 +70,10 @@ public class BotLogic {
 
     public static Boolean login(User user_login) {
         User user_db = Database.getUser(user_login);
-        System.out.println("User: " + user_login.getHandle() + " Password: " + user_login.getPassword());
-        // Si el usuario no existe, login incorrecto
-        // TODO: ya no, ahora si el usuario no existe, se crea
 
         if (user_db == null) {
             Database.insertUser(user_login);
             System.out.println("Usuario creado con: " + user_login.getHandle());
-            // también le ponemos que esté subscrito al topic lobby
             Chatroom chatroom = new Chatroom();
             chatroom.setId(1);
             Database.insertSubscription(user_login, chatroom);
@@ -81,13 +81,9 @@ public class BotLogic {
         }
 
         // Comprobamos que los credentials estan bien
-        System.out.println("USER_LOGIN -> " + user_login.getPassword());
-        System.out.println("USER_LOGIN -> " + user_db.getPassword());
         if (BCrypt.checkpw(user_login.getPassword(), user_db.getPassword())) {
-            System.out.println("LOGIN CORRECTO - " + user_login.getHandle());
             return true;
         }
-        System.out.println("LOGIN INCORRECTO - " + user_login.getHandle());
         return false;
     }
 }

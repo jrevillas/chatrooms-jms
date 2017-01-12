@@ -12,26 +12,27 @@ import java.util.Map;
 
 public class Launcher implements javax.jms.MessageListener {
 
+    private static final String SOURCE = "sibyl.Launcher";
+
+
     public static Map<String, UserConnection> map;
     public static Map<String, ChatroomConnection> topicMap;
     private static ConnectionFactory myConnFactory;
     private static Connection myConn;
     public static Session subSession;
-    //private static Queue sibylQueue;
-
-    private static final String RED = "\u001B[31m";
-    private static final String RESET = "\u001B[0m";
+    private static Queue login;
 
     public Launcher() {
         try {
             myConnFactory = new com.sun.messaging.ConnectionFactory();
             myConn = myConnFactory.createConnection();
             subSession = myConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            // chatTopic = subSession.createTopic("ClashRoyale");
 
             map = new HashMap<String, UserConnection>();
 
             User[] arrayUsers = Database.getUsers();
+
+            PTLogger.info(SOURCE, "Inicializando el HashMap con las conexiones de usuario");
 
             for (int i = 0; i < arrayUsers.length; i++) {
                 UserConnection userConnection = new UserConnection();
@@ -52,10 +53,6 @@ public class Launcher implements javax.jms.MessageListener {
                 userConnection.setSibylReqQ(sibylQueueReq);
                 userConnection.setSibylResQ(sibylQueueRes);
 
-                // Llamaremos a SibylQueueManager cuando nos lleguen cosas por alguna cola
-                // Técnicamente, si recibimos cosas por el topic, deberíamos quedarnos aquí
-                // Basicamente, si tenemos que comunicarnos de vuelta con el usuario
-                // Lo hacemos mediante Sibyl.
                 consumer.setMessageListener(new SibylQueueManager());
 
                 map.put(user, userConnection);
@@ -64,11 +61,15 @@ public class Launcher implements javax.jms.MessageListener {
             topicMap = new HashMap<String, ChatroomConnection>();
             Chatroom[] chatrooms = Database.getChatrooms();
 
+            PTLogger.info(SOURCE, "Inicializando HashMap con los topics disponibles hasta ahora");
+
             for (int i = 0; i < chatrooms.length; i++) {
                 ChatroomConnection chatroomConnection = new ChatroomConnection();
 
                 int numberDb = i + 1;
-                System.out.println("Indexando topic " + chatrooms[i].getName() + " (topic" + numberDb + ")");
+
+                PTLogger.jms(SOURCE, "Indexando el topic " + chatrooms[i].getName()
+                        + " que se corresponde con el destino jms: topic" + numberDb);
                 Topic chatTopic = subSession.createTopic("topic" + numberDb);
                 chatroomConnection.setTopic(chatTopic);
 
@@ -85,6 +86,11 @@ public class Launcher implements javax.jms.MessageListener {
                 subscriber.setMessageListener(this);
             }
 
+            PTLogger.jms(SOURCE, "Creando cola de login");
+            login = subSession.createQueue("login");
+            MessageConsumer consumerLogin = subSession.createConsumer(login);
+            consumerLogin.setMessageListener(new SibylQueueManager());
+
             myConn.start();
         } catch (JMSException e) {
             e.printStackTrace();
@@ -95,8 +101,6 @@ public class Launcher implements javax.jms.MessageListener {
     public void onMessage(Message msg) {
         try {
             MapMessage message = (MapMessage) msg;
-            System.out.println("USER: " + message.getString("USER") + " \n\tand CONTENT: " + message.getString("CONTENT") +
-                    "\n\tfrom CHATROOM: " + message.getString("CHATROOM"));
             int type = message.getInt("TYPE");
             switch (Types.values()[type]) {
                 case MSG_SIMPLE:
@@ -124,12 +128,13 @@ public class Launcher implements javax.jms.MessageListener {
         }
     }
 
-    private String printError(String messageType) {
-        String result = "[" + messageType + "] " + RED + "Mensaje deforme" + RESET;
-        return result;
+    private void printError(String messageType) {
+        PTLogger.error(SOURCE, "[" + messageType + "] Mensaje deforme");
     }
 
     private void MSG_SIMPLE(String msgContent, String handle, String name) {
+        PTLogger.jms(SOURCE, "Usuario @" + handle + " ha enviado un mensaje a la chatroom " + name
+                + "\n                       └ \u001B[35mNotificando a los usuarios por sus queues\u001B[0m");
         StdMessage stdMessage = new StdMessage();
         stdMessage.setText(msgContent);
         User user = new User();
@@ -138,7 +143,6 @@ public class Launcher implements javax.jms.MessageListener {
         chatroom.setName(name);
         BotLogic.insertMessage(stdMessage, user, chatroom);
 
-        // TODO: Notificar a todos los usuarios que estén subscritos a ese topic por sus colas
         try {
             MapMessage message = subSession.createMapMessage();
             message.setInt("TYPE", Types.RES_NEW_MESSAGE.ordinal());
@@ -150,6 +154,8 @@ public class Launcher implements javax.jms.MessageListener {
     }
 
     private void MSG_WITH_MENTIONS(String msgMentions, String msgContent, String handle, String name) {
+        PTLogger.jms(SOURCE, "El usuario @" + handle + " ha mencionado a " + msgMentions + " en la chatroom " + name
+                + "\n                       └ \u001B[35mNotificando a los usuarios por sus queues\u001B[0m");
         StdMessage stdMessage = new StdMessage();
         stdMessage.setText(msgContent);
         User user = new User();
@@ -164,16 +170,19 @@ public class Launcher implements javax.jms.MessageListener {
             message.setInt("TYPE", Types.RES_NEW_MENTION.ordinal());
             message.setString("CHATROOM", chatroom.getName());
             for (String mention: mentions) {
-                System.out.println("Sending to: " + mention + " from chatroom: " + message.getString("CHATROOM"));
+                User user_db = Database.getUser(new User().setHandle(mention));
+                if (user_db == null)
+                    continue;
                 map.get(mention).getSibylProducerM().send(message);
             }
-
         } catch (JMSException e) {
             e.printStackTrace();
         }
     }
 
     private void sendMessages(Chatroom chatroom, Message message) {
+        int id = Database.getChatroomId(chatroom.getName());
+        chatroom.setId(id);
         User[] users = Database.getUsersFromChatroom(chatroom);
         try {
             for (int i = 0; i < users.length; i++) {
@@ -185,6 +194,7 @@ public class Launcher implements javax.jms.MessageListener {
     }
 
     public static void main(String[] args) {
+        PTLogger.jms(SOURCE, "Arrancando servidor sibyl...");
         Launcher instancia = new Launcher();
         while (true) {
             try {
