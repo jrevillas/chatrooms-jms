@@ -8,10 +8,10 @@ import java.util.List;
 
 class ChatroomGUI extends Chatroom {
     private ImageIcon icon;
-    private int unreadMessages;
+    private int unreadMessages = 0;
     private boolean mention = false;
     private List<MessageGUI> messages;
-    private boolean subscription;
+    private static int random = 1;
 
     ChatroomGUI() {
         messages = new ArrayList<>();
@@ -19,11 +19,13 @@ class ChatroomGUI extends Chatroom {
 
     private void setIcon(String icon) {
         this.icon = new ImageIcon(getClass().getResource("/clientGUI/resources/" + icon));
+        this.icon = new ImageIcon(this.icon.getImage().getScaledInstance(60, 60, java.awt.Image.SCALE_SMOOTH));
     }
 
     ImageIcon getIcon() {
-        if (icon == null)
-            setIcon("example.png");
+        if (icon == null) {
+            setIcon("avatar" +  (1+(random++%4)) + ".png");
+        }
         return this.icon;
     }
 
@@ -36,8 +38,11 @@ class ChatroomGUI extends Chatroom {
         mention = false;
     }
 
-    void setMention() {
-        this.mention = true;
+    void newMessage(boolean mention) {
+        if (mention)
+            this.mention = true;
+        unreadMessages++;
+
     }
 
     public ChatroomGUI setName(String name) {
@@ -49,29 +54,11 @@ class ChatroomGUI extends Chatroom {
         return this.mention;
     }
 
-    void newMessage(MessageGUI message) {
-        messages.add(message);
-    }
-
     List<MessageGUI> getMessages() {
         return this.messages;
     }
 
     void eraseMessages() {
         this.messages.clear();
-    }
-
-    void setSubscription(boolean subscription) {
-        this.subscription = subscription;
-    }
-
-    void newNotification(boolean mention) {
-        if (subscription)
-            unreadMessages++;
-        this.mention |= mention;
-    }
-
-    void addMessage(MessageGUI message) {
-        messages.add(message);
     }
 }

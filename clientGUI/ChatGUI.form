@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="clientGUI.ChatGUI">
-  <grid id="27dc6" binding="panelGeneral" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="panelGeneral" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="0" vgap="0">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="980" height="720"/>
     </constraints>
     <properties>
+      <foreground color="-1"/>
       <minimumSize width="980" height="720"/>
     </properties>
     <border type="none"/>
@@ -14,7 +15,9 @@
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-14474461"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="3feb8" class="javax.swing.JButton" binding="buttonNewRoom">
@@ -23,9 +26,10 @@
               <borderPainted value="false"/>
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
-              <font name="Roboto Light"/>
+              <font name="Roboto Light" size="18" style="0"/>
+              <foreground color="-3355444"/>
               <horizontalTextPosition value="11"/>
-              <margin top="2" left="4" bottom="2" right="4"/>
+              <margin top="6" left="4" bottom="2" right="4"/>
               <text value="&amp;Join Room"/>
             </properties>
           </component>
@@ -35,11 +39,13 @@
               <autoscrolls value="false"/>
               <borderPainted value="false"/>
               <contentAreaFilled value="false"/>
+              <enabled value="true"/>
               <focusPainted value="false"/>
-              <font name="Roboto Light"/>
+              <font name="Roboto Light" size="18" style="0"/>
+              <foreground color="-4079167"/>
               <horizontalAlignment value="0"/>
               <horizontalTextPosition value="0"/>
-              <margin top="2" left="4" bottom="2" right="4"/>
+              <margin top="6" left="4" bottom="2" right="4"/>
               <text value="&amp;Settings"/>
             </properties>
           </component>
@@ -57,9 +63,10 @@
           </grid>
         </constraints>
         <properties>
-          <dividerLocation value="254"/>
+          <dividerLocation value="250"/>
           <dividerSize value="0"/>
           <enabled value="false"/>
+          <opaque value="false"/>
         </properties>
         <border type="none"/>
         <children>
@@ -67,7 +74,10 @@
             <constraints>
               <splitpane position="right"/>
             </constraints>
-            <properties/>
+            <properties>
+              <foreground color="-1"/>
+              <opaque value="false"/>
+            </properties>
             <border type="none"/>
             <children>
               <grid id="e339f" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -82,7 +92,7 @@
                       <borderPainted value="false"/>
                       <contentAreaFilled value="false"/>
                       <focusPainted value="false"/>
-                      <font name="Roboto Light" size="14"/>
+                      <font name="Roboto Light" size="14" style="0"/>
                       <margin top="2" left="14" bottom="0" right="4"/>
                       <text value="&amp;Leave Room"/>
                     </properties>
@@ -95,6 +105,7 @@
                       <enabled value="true"/>
                       <focusPainted value="false"/>
                       <focusable value="false"/>
+                      <font name="Roboto Light" size="14" style="0"/>
                       <margin top="2" left="4" bottom="2" right="14"/>
                       <text value=""/>
                     </properties>
@@ -134,78 +145,39 @@
                   </component>
                 </children>
               </grid>
-              <splitpane id="a9fe">
+              <scrollpane id="eecc4">
                 <constraints border-constraint="Center"/>
                 <properties>
-                  <dividerLocation value="560"/>
-                  <dividerSize value="1"/>
-                  <doubleBuffered value="false"/>
-                  <enabled value="false"/>
-                  <focusable value="false"/>
-                  <lastDividerLocation value="-1"/>
+                  <alignmentX value="0.5"/>
+                  <alignmentY value="0.5"/>
+                  <autoscrolls value="true"/>
+                  <background color="-1"/>
+                  <font name="Roboto Light"/>
+                  <foreground color="-1"/>
+                  <opaque value="false"/>
+                  <verticalScrollBarPolicy value="20"/>
                 </properties>
                 <border type="none"/>
                 <children>
-                  <scrollpane id="eecc4">
-                    <constraints>
-                      <splitpane position="left"/>
-                    </constraints>
+                  <component id="5955b" class="javax.swing.JTable" binding="tableMessages">
+                    <constraints/>
                     <properties>
-                      <alignmentX value="0.5"/>
-                      <alignmentY value="0.5"/>
-                      <autoscrolls value="true"/>
                       <background color="-1"/>
+                      <focusable value="false"/>
                       <font name="Roboto Light"/>
-                      <foreground color="-14771781"/>
+                      <foreground color="-13882324"/>
+                      <gridColor color="-1"/>
+                      <inheritsPopupMenu value="false"/>
                       <opaque value="true"/>
-                      <verticalScrollBarPolicy value="20"/>
+                      <rowSelectionAllowed value="false"/>
+                      <selectionBackground color="-1"/>
+                      <selectionForeground color="-13882324"/>
+                      <showHorizontalLines value="false"/>
+                      <showVerticalLines value="false"/>
                     </properties>
-                    <border type="none"/>
-                    <children>
-                      <component id="5955b" class="javax.swing.JTable" binding="tableMessages">
-                        <constraints/>
-                        <properties>
-                          <background color="-1"/>
-                          <focusable value="false"/>
-                          <font name="Roboto Light"/>
-                          <foreground color="-13882324"/>
-                          <gridColor color="-1"/>
-                          <inheritsPopupMenu value="false"/>
-                          <rowSelectionAllowed value="false"/>
-                          <selectionBackground color="-1"/>
-                          <selectionForeground color="-13882324"/>
-                          <showHorizontalLines value="false"/>
-                          <showVerticalLines value="false"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </scrollpane>
-                  <scrollpane id="82349">
-                    <constraints>
-                      <splitpane position="right"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                      <maximumSize width="21" height="25"/>
-                    </properties>
-                    <border type="none"/>
-                    <children>
-                      <component id="959e1" class="javax.swing.JTable" binding="tableUsers">
-                        <constraints/>
-                        <properties>
-                          <autoResizeMode value="4"/>
-                          <autoscrolls value="true"/>
-                          <background color="-1"/>
-                          <selectionBackground color="-1"/>
-                          <selectionForeground color="-16777216"/>
-                          <showHorizontalLines value="false"/>
-                          <showVerticalLines value="false"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </scrollpane>
+                  </component>
                 </children>
-              </splitpane>
+              </scrollpane>
             </children>
           </grid>
           <scrollpane id="7d046">
@@ -214,6 +186,9 @@
             </constraints>
             <properties>
               <background color="-1"/>
+              <enabled value="true"/>
+              <font name="Roboto Light" size="14" style="0"/>
+              <foreground color="-1"/>
             </properties>
             <border type="none"/>
             <children>

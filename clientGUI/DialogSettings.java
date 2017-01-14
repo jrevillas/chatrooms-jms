@@ -3,101 +3,151 @@ package clientGUI;
 import clientGUI.resources.languages.Language;
 
 import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 
 class DialogSettings extends JDialog {
     private JPanel contentPane;
-    private JTextField fieldHandler;
-    private JButton buttonHandler;
-    private JButton buttonPassword;
-    private JButton buttonLogout;
     private JPasswordField passwordField;
-    private JComboBox<String> comboBox1;
+    private JComboBox<String> comboLanguages;
     private JButton buttonLanguage;
-    private JLabel labelLog;
-    private JButton buttonExit;
-    private JPanel panelGeneral;
-    private int result;
+    private JButton buttonPassword;
+    private String handle;
+    private ChatGUI gui;
+
     private Language lan;
     private DialogLoading dialogLoading;
-
-    int getResult() {
-        return result;
-    }
-
-    String getPassword() {
-        return String.valueOf(passwordField.getPassword());
-    }
+    private JTextField fieldHandle;
+    private JButton buttonHandle;
+    private JLabel labelLogout;
+    private JButton buttonLogout;
 
     DialogSettings() {
+        // Initializers
         lan = new Language();
+        buildPanel();
         setContentPane(contentPane);
-        setModal(true);
-        this.setLanguage(0);
 
+        // Button Settings
         buttonLanguage.addActionListener(e -> {
-            result = 1;
-            setLanguage(comboBox1.getSelectedIndex());
-            dialogLoading = new DialogLoading();
-        });
-
-        buttonHandler.addActionListener(e -> {
-            result = 2;
-            dialogLoading = new DialogLoading();
-        });
+                    setLanguage(comboLanguages.getSelectedIndex());
+                    gui.setLanguage();
+                }
+        );
 
         buttonPassword.addActionListener(e -> {
             if (this.getPassword().length() > 0) {
-                DynamicProducerGUI.messageChangePassword(ChatGUI.user.getHandle(), this.getPassword());
+                DynamicProducerGUI.messageChangePassword(handle, this.getPassword());
                 dialogLoading = new DialogLoading();
-            }
-            JOptionPane.showMessageDialog(this, lan.getProperty("setPwdError"));
+            } else
+                JOptionPane.showMessageDialog(this, lan.getProperty("setPwdLen"));
         });
 
-        buttonLogout.addActionListener(e ->  {
-            if (JOptionPane.showConfirmDialog(this, lan.getProperty("setLogConf")) == 0) {
-                result = 2;
-                dialogLoading = new DialogLoading();
-            }
-        });
+        buttonHandle.addActionListener(e -> System.out.println("TODO"));
 
-        buttonExit.addActionListener(e -> dispose());
+        buttonLogout.addActionListener(e -> gui.logout());
 
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                dispose();
-            }
-        });
+        // Frame Settings
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        contentPane.registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        this.setTitle(lan.getProperty("setTitle"));
+        this.setModal(true);
+        this.setResizable(false);
+    }
+
+    private void buildPanel() {
+        Font light = new Font("Roboto Light", 0, 16);
+        Color grey7 = Color.decode("#333333");
+
+        buttonLanguage = new JButton();
+        buttonLanguage.setFont(light);
+        buttonLanguage.setForeground(grey7);
+
+        comboLanguages = new JComboBox<>();
+        comboLanguages.setFont(light);
+        comboLanguages.setForeground(grey7);
+
+        passwordField = new JPasswordField();
+        passwordField.setFont(light);
+        passwordField.setForeground(grey7);
+
+        buttonPassword = new JButton();
+        buttonPassword.setFont(light);
+        buttonPassword.setForeground(grey7);
+
+        fieldHandle = new JTextField();
+        fieldHandle.setFont(light);
+        fieldHandle.setForeground(grey7);
+        fieldHandle.setEnabled(false);
+
+        buttonHandle = new JButton();
+        buttonHandle.setFont(light);
+        buttonHandle.setForeground(grey7);
+        buttonHandle.setEnabled(false);
+
+        labelLogout = new JLabel();
+        labelLogout.setFont(new Font("Roboto Light", 0, 14));
+        labelLogout.setForeground(grey7);
+
+        buttonLogout = new JButton();
+        buttonLogout.setFont(light);
+        buttonLogout.setForeground(grey7);
+
+        contentPane = new JPanel(new GridLayout(4, 2, 5, 5));
+        contentPane.setBorder(new EmptyBorder(5, 20, 15, 20));
+
+        contentPane.add(comboLanguages, 0);
+        contentPane.add(buttonLanguage, 1);
+        contentPane.add(passwordField, 2);
+        contentPane.add(buttonPassword, 3);
+        contentPane.add(fieldHandle, 4);
+        contentPane.add(buttonHandle, 5);
+        contentPane.add(labelLogout, 6);
+        contentPane.add(buttonLogout, 7);
+    }
+
+    private String getPassword() {
+        return String.valueOf(passwordField.getPassword());
     }
 
     private void setLanguage(int index) {
         String lang;
         lan.setLanguage(index);
-        panelGeneral.setBorder(BorderFactory.createTitledBorder(lan.getProperty("settings")));
         buttonLanguage.setText(lan.getProperty("setButLan"));
-        buttonHandler.setText(lan.getProperty("setButHand"));
         buttonPassword.setText(lan.getProperty("setButPwd"));
-        labelLog.setText(lan.getProperty("setLabLog") + ChatGUI.user.getHandle());
+        buttonHandle.setText(lan.getProperty("setButHand"));
+        labelLogout.setText(lan.getProperty("setLabLog") + " " + this.handle);
         buttonLogout.setText(lan.getProperty("setButLog"));
-        buttonExit.setText(lan.getProperty("exit"));
-        comboBox1.removeAllItems();
-        for (int i = 0; (lang = lan.getProperty("language" + i)) != null ; i++)
-            comboBox1.addItem(lang);
-        comboBox1.setSelectedIndex(Language.index);
+
+        comboLanguages.removeAllItems();
+        for (int i = 0; (lang = lan.getProperty("language" + i)) != null; i++)
+            comboLanguages.addItem(lang);
+        comboLanguages.setSelectedIndex(Language.index);
     }
 
     void result(boolean status) {
-        if (status){
+        if (status) {
             dialogLoading.dispose();
             JOptionPane.showMessageDialog(this, lan.getProperty("seChPwdOK"));
         } else {
             dialogLoading.dispose();
             JOptionPane.showMessageDialog(this, lan.getProperty("seChPwdWr"));
         }
+    }
+
+    void setParams(ChatGUI chatGUI, String handle) {
+        this.gui = chatGUI;
+        this.handle = handle;
+        this.setLanguage(0);
+    }
+
+    public static void main(String[] args) {
+        DialogSettings dialogSettings = new DialogSettings();
+
+        dialogSettings.setLocationRelativeTo(null);
+        dialogSettings.setVisible(true);
     }
 }

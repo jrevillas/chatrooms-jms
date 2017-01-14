@@ -39,6 +39,8 @@ class DynamicProducerGUI {
                 topicProducer.close();
             if (sibylProducer != null)
                 sibylProducer.close();
+
+            System.out.println("[INFO] Enviando " + MessageType.REQ_LOGIN + " " + user + " " + password);
             MessageProducer loginProducer = session.createProducer
                     (session.createQueue("login"));
             MapMessage mapMessage = session.createMapMessage();
@@ -53,12 +55,18 @@ class DynamicProducerGUI {
     }
 
     static boolean messageSimple(String chatroom, String content, String mentions, String user) {
+        System.out.print("[INFO] Enviando ");
         try {
             MapMessage mapMessage = session.createMapMessage();
-            if (mentions.length() == 0)
+            if (mentions.length() == 0) {
                 mapMessage.setInt("TYPE", MessageType.MSG_SIMPLE.ordinal());
-            else
+                System.out.print(MessageType.MSG_SIMPLE);
+            }
+            else {
                 mapMessage.setInt("TYPE", MessageType.MSG_WITH_MENTIONS.ordinal());
+                System.out.print(MessageType.MSG_WITH_MENTIONS);
+            }
+            System.out.println(" " + chatroom + " " + content + " " + mentions + " " + user);
             mapMessage.setString("CHATROOM", chatroom);
             mapMessage.setString("CONTENT", content);
             mapMessage.setString("MENTIONS", mentions);
@@ -72,6 +80,8 @@ class DynamicProducerGUI {
 
     static boolean messageChangeName(String chatroom, String name, String user) {
         try {
+            System.out.println("[INFO] Enviando  " + MessageType.REQ_ROOM_CHANGE_NAME + " " +
+                    chatroom + " a " + name + " por " + user);
             MapMessage mapMessage = session.createMapMessage();
             mapMessage.setInt("TYPE", MessageType.REQ_ROOM_CHANGE_NAME.ordinal());
             mapMessage.setString("CHATROOM", chatroom);
@@ -86,6 +96,7 @@ class DynamicProducerGUI {
 
     static boolean messageRoomCreate(String chatroom, String user) {
         try {
+            System.out.println("[INFO] Enviando " + MessageType.REQ_ROOM_CREATE + " " + chatroom + " por " + user);
             MapMessage mapMessage = session.createMapMessage();
             mapMessage.setInt("TYPE", MessageType.REQ_ROOM_CREATE.ordinal());
             mapMessage.setString("CHATROOM", chatroom);
@@ -99,10 +110,11 @@ class DynamicProducerGUI {
 
     static boolean messageChangePassword(String user, String pwd) {
         try {
+            System.out.println("[INFO] Enviando " + MessageType.REQ_USER_CHANGE_PASSWORD + " " + user + " a " + pwd);
             MapMessage mapMessage = session.createMapMessage();
             mapMessage.setInt("TYPE", MessageType.REQ_USER_CHANGE_PASSWORD.ordinal());
             mapMessage.setString("USER", user);
-            mapMessage.setString("PASSWORD", pwd);
+            mapMessage.setString("PASSWD", pwd);
             sibylProducer.send(mapMessage);
             return true;
         } catch (JMSException e) {
@@ -112,6 +124,7 @@ class DynamicProducerGUI {
 
     static boolean messageChangeRoom(String user, String chatroom) {
         try {
+            System.out.println("[INFO] Enviando " + MessageType.REQ_USER_JOIN_ROOM + " " + user + " " + chatroom);
             MapMessage mapMessage = session.createMapMessage();
             mapMessage.setInt("TYPE", MessageType.REQ_USER_JOIN_ROOM.ordinal());
             mapMessage.setString("USER", user);
@@ -123,11 +136,14 @@ class DynamicProducerGUI {
         }
     }
 
-    static boolean messageUnsubscribe(String chatroom) {
+    static boolean messageLeave(String user, String chatroom) {
         try {
+            System.out.println("[INFO] Enviando " + MessageType.REQ_USER_LEAVE_ROOM + " " + user + " " + chatroom);
             MapMessage mapMessage = session.createMapMessage();
             mapMessage.setInt("TYPE", MessageType.REQ_USER_LEAVE_ROOM.ordinal());
+            mapMessage.setString("USER", user);
             mapMessage.setString("CHATROOM", chatroom);
+            sibylProducer.send(mapMessage);
             return true;
         } catch (JMSException e) {
             return false;

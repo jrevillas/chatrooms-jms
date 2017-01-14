@@ -32,10 +32,10 @@ public class MyTableCellRenderer extends DefaultTableCellRenderer {
                 row, column);
         if (color == 3) {
             ChatroomGUI chat = (ChatroomGUI) ((GenericDomainTableModel) table.getModel()).getDomainObject(row);
-            if (chat.getMention())
-                this.setForeground(Color.RED);
-            else if (chat.getUnreadMessages() == 0)
+            if (chat.getUnreadMessages() == 0)
                 this.setForeground(Color.WHITE);
+            else if (chat.getMention())
+                this.setForeground(Color.RED);
             else
                 this.setForeground (Color.BLACK);
         }

@@ -11,6 +11,7 @@ class DialogLoading extends JDialog{
         this.setUndecorated(true);
         this.add(contentPane);
         this.pack();
-        this.setVisible(true);
+        this.setAlwaysOnTop(true);
+        this.setResizable(false);
     }
 }

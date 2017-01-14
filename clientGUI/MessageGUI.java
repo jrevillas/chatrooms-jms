@@ -59,4 +59,8 @@ class MessageGUI {
         this.mentions = mentions;
         return this;
     }
+
+    public String toString(){
+        return chatroom + " from " + handle_user;
+    }
 }

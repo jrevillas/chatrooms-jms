@@ -32,7 +32,6 @@ public class ChatGUI {
     private JTextField textSend;
     private JTable tableMessages;
     private JTable tableRooms;
-    private JTable tableUsers;
     private JButton buttonRoomName;
     private Component glassPane;
     // DIALOGS
@@ -41,13 +40,12 @@ public class ChatGUI {
     // LISTS & MODELS
     private GenericDomainTableModel<MessageGUI> modelMessages;
     private GenericDomainTableModel<ChatroomGUI> modelRooms;
-    private GenericDomainTableModel<User> modelUsers;
     // BROOKER UTILS
     private Session session;
     private FancyConsumerGUI consumer;
     // AUXILIARS
-    private Object result;
-    static User user;
+    private ChatroomGUI result;
+    private User user;
     private ChatroomGUI chatroom;
     private Language lan;
 
@@ -74,6 +72,13 @@ public class ChatGUI {
                 super.paintComponent(g);
             }
         });
+
+        UIManager.put("OptionPane.messageFont", new Font("Roboto Light", 0, 14));
+        UIManager.put("OptionPane.buttonFont", new Font("Roboto Light", 0, 16));
+
+        UIManager.put("Button.foreground", Color.decode("#232323"));
+        UIManager.put("Button.font", new Font("Roboto Light", 0, 16));
+
         glassPane = frame.getGlassPane();
         try {
             consumer = new FancyConsumerGUI().setChatGUI(this);
@@ -85,7 +90,7 @@ public class ChatGUI {
         }
     }
 
-    private void setLanguage() {
+    void setLanguage() {
         lan = new Language();
         buttonLeaveRoom.setText(lan.getProperty("chLeaveRoom"));
         buttonNewRoom.setText(lan.getProperty("chNewRoom"));
@@ -130,20 +135,6 @@ public class ChatGUI {
 
             @Override
             public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-                ChatroomGUI topicRow = this.getDomainObject(rowIndex);
-                switch (columnIndex) {
-                    case 0:
-                        break;
-                    case 1:
-                        topicRow.setName((String) aValue);
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        topicRow.setMention();
-                        break;
-
-                }
             }
 
             @Override
@@ -223,56 +214,59 @@ public class ChatGUI {
         tableMessages.getColumn("sender").setMinWidth(100);
         tableMessages.getColumn("sender").setMaxWidth(100);
         tableMessages.getColumn("sender").setCellRenderer(renderSender);
+        tableMessages.setFont(new Font("OpenSansEmoji", 0, 12));
         tableMessages.getTableHeader().setUI(null);
         // Users
-        modelUsers = new GenericDomainTableModel<User>(Arrays.asList(new String[]{"users"})) {
-
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                return String.class;
-            }
-
-            @Override
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                return getDomainObject(rowIndex).getHandle();
-            }
-
-            @Override
-            public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            }
-        };
-        tableUsers.setModel(modelUsers);
-        tableUsers.getColumn("users").setMinWidth(100);
-        tableUsers.getColumn("users").setMaxWidth(100);
-        tableUsers.getColumn("users").setResizable(false);
-        DefaultTableCellRenderer renderUser = new MyTableCellRenderer(2, false);
-        tableUsers.getColumn("users").setCellRenderer(renderUser);
-        tableUsers.getTableHeader().setUI(null);
-        tableUsers.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                String message = textSend.getText();
-                message += (message.length() == 0) ? "" : " ";
-                textSend.setText(message + "@" + modelUsers.
-                        getDomainObject(tableUsers.rowAtPoint(e.getPoint())).getHandle());
-            }
-        });
+//        modelUsers = new GenericDomainTableModel<User>(Arrays.asList(new String[]{"users"})) {
+//
+//            @Override
+//            public Class<?> getColumnClass(int columnIndex) {
+//                return String.class;
+//            }
+//
+//            @Override
+//            public Object getValueAt(int rowIndex, int columnIndex) {
+//                return getDomainObject(rowIndex).getHandle();
+//            }
+//
+//            @Override
+//            public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+//            }
+//        };
+//        tableUsers.setModel(modelUsers);
+//        tableUsers.getColumn("users").setMinWidth(100);
+//        tableUsers.getColumn("users").setMaxWidth(100);
+//        tableUsers.getColumn("users").setResizable(false);
+//        DefaultTableCellRenderer renderUser = new MyTableCellRenderer(2, false);
+//        tableUsers.getColumn("users").setCellRenderer(renderUser);
+//        tableUsers.getTableHeader().setUI(null);
+//        tableUsers.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                String message = textSend.getText();
+//                message += (message.length() == 0) ? "" : " ";
+//                textSend.setText(message + "@" + modelUsers.
+//                        getDomainObject(tableUsers.rowAtPoint(e.getPoint())).getHandle());
+//            }
+//        });
     }
 
     private void configureButtons() {
         buttonSend.addActionListener(e -> sendMessage());
         buttonNewRoom.addActionListener(e -> createRoom(false, false));
-        buttonLeaveRoom.addActionListener(e -> unsubscribe(false));
+        buttonLeaveRoom.addActionListener(e -> leaveRoom(false));
         buttonSettings.addActionListener(e -> openSettings(false, false));
         buttonRoomName.addActionListener(e -> changeRoomName(false, null, null));
     }
 
     // LOGIN    ----------------------------------------------------------------------------------
+
     private void login() {
         panelLogin = new PanelLogin().setChatGUI(this);
         frame.setContentPane(panelLogin);
         frame.pack();
         frame.setLocationRelativeTo(null);
+        frame.setResizable(false);
         frame.setVisible(true);
     }
 
@@ -280,27 +274,32 @@ public class ChatGUI {
         user = new User().setHandle(usr).setPassword(String.valueOf(pwd));
         consumer.setHandler(usr);
         panelLogin.setEnabled(false);
-        DynamicProducerGUI.messageLogin(usr, String.valueOf(pwd));
         this.showDialogLoading(true);
+        DynamicProducerGUI.messageLogin(usr, String.valueOf(pwd));
     }
 
     void start(boolean loginOK, String topics) {
         this.showDialogLoading(false);
         if (loginOK) {
+            this.frame.setVisible(false);
             JOptionPane.showMessageDialog(panelLogin, lan.getProperty("loLogg"));
-            frame.setContentPane(panelGeneral);
-            frame.pack();
-            frame.setVisible(true);
-            panelGeneral.registerKeyboardAction(e -> sendMessage(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-                    JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             DynamicProducerGUI.setProducer(user.getHandle());
             this.configureButtons();
             this.initializeTables();
             for (String chatRoom : topics.split("\\|"))
                 modelRooms.addRow(new ChatroomGUI().setName(chatRoom));
             changeRoom(0, false);
-        } else
+            frame.setContentPane(panelGeneral);
+            frame.setMinimumSize(new Dimension(970, 670));
+            frame.setLocationRelativeTo(null);
+            frame.setResizable(true);
+            frame.setVisible(true);
+            panelGeneral.registerKeyboardAction(e -> sendMessage(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+                    JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        } else {
             JOptionPane.showMessageDialog(panelLogin, lan.getProperty("loWrPwd"));
+            panelLogin.failedLogin();
+        }
     }
 
     // MESSAGES ----------------------------------------------------------------------------------
@@ -315,36 +314,33 @@ public class ChatGUI {
 
     void newMessage(String chatroom, boolean mention) {
         if (!chatroom.equals(this.chatroom.getName())) {
-            ChatroomGUI chatRoom = (ChatroomGUI) modelRooms.getDomainObject(chatroom);
-            chatRoom.newNotification(mention);
-            modelRooms.notifyTableRowsUpdated(0, modelRooms.getRowCount());
+            ChatroomGUI chat = (ChatroomGUI) modelRooms.getDomainObject(chatroom);
+            chat.newMessage(mention);
+            modelRooms.notifyDomainObjectUpdated(chat);
         }
     }
 
-    boolean printMessage(MessageGUI message) {
+    void printMessage(MessageGUI message) {
         modelMessages.addRow(message);
-        chatroom.newMessage(message);
-        return true;
     }
 
     // ROOMS    ----------------------------------------------------------------------------------
 
     void createRoom(boolean response, boolean result) {
         if (!response) {
-            DialogJoinRoom dialog = new DialogJoinRoom();
-            dialog.setMinimumSize(new Dimension(300, 200));
-            dialog.setLocationRelativeTo(panelGeneral);
-            dialog.setResizable(false);
-            dialog.setVisible(true);
-            this.result = dialog.getChatroom();
-            if (this.result != null) {
+            DialogCreateRoom dcr = new DialogCreateRoom();
+            dcr.setLocationRelativeTo(panelGeneral);
+            dcr.setVisible(true);
+            String newRoom = dcr.getResult();
+            if (newRoom != null) {
+                this.result = new ChatroomGUI().setName(newRoom);
+                DynamicProducerGUI.messageRoomCreate(newRoom, user.getHandle());
                 showDialogLoading(true);
-                DynamicProducerGUI.messageRoomCreate(((ChatroomGUI) this.result).getName(), user.getHandle());
             }
         } else {
             showDialogLoading(false);
             if (result) {
-                this.modelRooms.addRow((ChatroomGUI) this.result);
+                this.modelRooms.addRow(this.result);
                 this.changeRoom(modelRooms.getDataSize() - 1, false);
             } else {
                 JOptionPane.showMessageDialog(panelGeneral, "ERROR", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -360,69 +356,65 @@ public class ChatGUI {
             modelMessages.clearTableModelData();
             result = modelRooms.getDomainObject(index);
             modelRooms.notifyTableRowsUpdated(index, index);
-            DynamicProducerGUI.messageChangeRoom(user.getHandle(), ((ChatroomGUI) result).getName());
+            DynamicProducerGUI.messageChangeRoom(user.getHandle(), result.getName());
             showDialogLoading(true);
         } else {
             showDialogLoading(false);
             modelMessages.addRows(chatroom.getMessages());
             buttonRoomName.setText(chatroom.getName());
             chatroom.setZeroMessages();
+            modelRooms.notifyDomainObjectUpdated(chatroom);
         }
     }
 
     void changeRoomRes(String content, String topic) {
         if (chatroom != null)
             chatroom.eraseMessages();
-        chatroom = (ChatroomGUI) result;
-        String[] split = content.split("\\|");
-        chatroom.setSubscription(true);
-        for (int i = 0; i < split.length; i += 3)
-            chatroom.addMessage(new MessageGUI()
-                    .setDate(Timestamp.valueOf(split[i]).getTime())
-                    .setHandle_user(split[i + 1])
-                    .setText(split[i + 2]));
+        chatroom = result;
+        if (!content.equals("")) {
+            String[] split = content.split("\\|");
+            for (int i = split.length-3; i >= 0; i -= 3)
+                modelMessages.addRow(new MessageGUI()
+                        .setDate(Timestamp.valueOf(split[i]).getTime())
+                        .setHandle_user(split[i + 1])
+                        .setText(split[i + 2]));
+        }
         consumer.changeRoom(topic);
         changeRoom(0, true);
     }
 
-    void unsubscribe(boolean response) {
-        if (response) {
-            if (chatroom == null)
-                JOptionPane.showMessageDialog(panelGeneral, lan.getProperty("chNoTop"),
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            else {
-                int really = JOptionPane.showConfirmDialog(panelGeneral, lan.getProperty("chLeavConf") +
-                        chatroom.getName() + "?", "Really", JOptionPane.YES_NO_OPTION);
-                chatroom.setSubscription(false);
-                if (really == 0) {
-                    DynamicProducerGUI.messageUnsubscribe(chatroom.getName());
-                }
-            }
+    void leaveRoom(boolean response) {
+        if (!response) {
+            DynamicProducerGUI.messageLeave(user.getHandle(), chatroom.getName());
             this.showDialogLoading(true);
         } else {
             showDialogLoading(false);
-            chatroom.setSubscription(false);
-            this.buttonRoomName.setText("");
-            this.changeRoom(0, false);
+            JOptionPane.showMessageDialog(panelGeneral, lan.getProperty("chLeavOK"));
         }
     }
 
     void changeRoomName(boolean response, String chatroom, String aNew) {
         if (!response) {
             String newRoomName;
-            newRoomName = JOptionPane.showInputDialog(null, lan.getProperty("chChanName"));
-            if (newRoomName == null)
-                JOptionPane.showMessageDialog(panelGeneral, lan.getProperty("chNoName"), lan.getProperty("WARNING"),
-                        JOptionPane.WARNING_MESSAGE);
-            DynamicProducerGUI.messageChangeName(chatroom, newRoomName, user.getHandle());
-            showDialogLoading(true);
+            DialogChangeName dcn = new DialogChangeName();
+            dcn.setLocationRelativeTo(panelGeneral);
+            dcn.setVisible(true);
+            newRoomName = dcn.getResult();
+            if (newRoomName != null) {
+                DynamicProducerGUI.messageChangeName(this.chatroom.getName(), newRoomName, user.getHandle());
+                showDialogLoading(true);
+            }
         } else {
             showDialogLoading(false);
-            dialogLoading.dispose();
             int tam = modelRooms.getDataSize();
-            for (int i = 0; i < tam; i++)
-                if (modelRooms.getDomainObject(i).getName().equals(chatroom))
-                    modelRooms.setValueAt(aNew, i, 2);
+            for (int i = 0; i < tam; i++) {
+                ChatroomGUI chat = modelRooms.getDomainObject(i);
+                if (chat.getName().equals(chatroom)) {
+                    chat.setName(aNew);
+                    modelRooms.notifyTableRowsUpdated(i, i);
+                    break;
+                }
+            }
         }
     }
 
@@ -431,18 +423,10 @@ public class ChatGUI {
     void openSettings(boolean response, boolean status) {
         if (!response) {
             dialogSettings = new DialogSettings();
-            dialogSettings.setMinimumSize(new Dimension(375, 200));
-            dialogSettings.setResizable(false);
+            dialogSettings.setParams(this, user.getHandle());
+            dialogSettings.pack();
             dialogSettings.setLocationRelativeTo(panelGeneral);
             dialogSettings.setVisible(true);
-            switch (dialogSettings.getResult()) {
-                case 1:
-                    setLanguage();
-                    break;
-                case 2:
-                    logout();
-                    break;
-            }
         } else {
             dialogSettings.result(status);
         }
@@ -463,15 +447,17 @@ public class ChatGUI {
     private void showDialogLoading(boolean visibility) {
         glassPane.setVisible(visibility);
         if (visibility) {
-            dialogLoading = new DialogLoading();
+            if (dialogLoading == null)
+                dialogLoading = new DialogLoading();
+            dialogLoading.setVisible(true);
             dialogLoading.setLocationRelativeTo(panelGeneral);
-        } else
+        } else {
+            dialogLoading.setVisible(false);
             dialogLoading.dispose();
-        glassPane.setVisible(visibility);
+        }
     }
 
-    private void logout() {
-//        System.out.println(user.getHandle() + " has logged out");
+    void logout() {
         System.exit(0);
     }
 
