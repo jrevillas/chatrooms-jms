@@ -98,10 +98,19 @@ El panel de _chatrooms_ esta compuesto de cinco partes: en la parte superior est
 
 Como elemento adicional, esta interfaz tiene opción bilingüe en inglés y en español.
 
-En las siguientes imagenes se puede ver la apariencia de la interfaz gráfica, tanto del login como el panel de _chatrooms_.
+En las siguientes imagenes se puede ver la apariencia de la interfaz gráfica, tanto del login como el panel de _chatrooms_, y todos los dialogos.
 
-![alt text](http://i.imgur.com/cQEczwo.png "Graphic Interface")
-![alt text](http://i.imgur.com/c81tIum.png "Graphic Interface")
+![alt text](http://imgur.com/S3QLCrt.png "Login in Graphic Interface")
+
+![alt text](http://imgur.com/cjykrTA.png "Graphic Interface")
+
+![alt text](http://imgur.com/zrjaBHt.png "Notifications in Graphic Interface")
+
+![alt text](http://imgur.com/2cblyTo.png "Settings Dialog in Graphic Interface")
+
+![alt text](http://imgur.com/V9xI8ij.png "Create Room Dialog in Graphic Interface")
+
+![alt text](http://imgur.com/lRe5g2t.png "Change Name Dialog in Graphic Interface")
 
 <a name="base-de-datos"/>
 ## Base de datos
